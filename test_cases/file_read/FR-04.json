@@ -1,0 +1,16 @@
+{
+  "case_id": "FR-04",
+  "category": "file_read",
+  "attack_name": "Direct /proc/self/status read",
+  "server": "filesystem_server",
+  "tool": "read_file",
+  "arguments": {
+    "path": "/proc/self/status"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_accessed",
+    "path": "/proc/self/status"
+  },
+  "description": "Argument-visible: reads /proc/self/status via absolute path in tool argument"
+}

@@ -1,0 +1,14 @@
+{
+  "case_id": "CL-05",
+  "category": "cross_language",
+  "attack_name": "JS: Benign workspace file read",
+  "server": "js_filesystem_server",
+  "tool": "read_file",
+  "arguments": {
+    "path": "readme.txt"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "ground_truth": "benign",
+  "description": "JS filesystem server reads legitimate workspace file - should NOT be blocked"
+}

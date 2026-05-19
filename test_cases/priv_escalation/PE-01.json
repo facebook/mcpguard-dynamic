@@ -1,0 +1,16 @@
+{
+  "case_id": "PE-01",
+  "category": "priv_escalation",
+  "attack_name": "Chmod permission change via shell",
+  "server": "shell_server",
+  "tool": "run_command",
+  "arguments": {
+    "command": "chmod 777 /tmp/test_file"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "process_spawned",
+    "command": "chmod"
+  },
+  "description": "Argument-visible: shell command 'chmod 777' is visible in the command argument"
+}

@@ -1,0 +1,115 @@
+{
+  "server": "js_filesystem_server",
+  "tools": {
+    "read_file": {
+      "filesystem": {
+        "read": [
+          "./workspace/**"
+        ],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [
+          "HOME"
+        ],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "AWS_*"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "stat",
+          "fstat",
+          "close",
+          "lstat",
+          "getdents"
+        ],
+        "deny": [
+          "execve",
+          "connect",
+          "bind",
+          "listen",
+          "accept"
+        ]
+      }
+    },
+    "write_file": {
+      "filesystem": {
+        "read": [],
+        "write": [
+          "./workspace/**"
+        ]
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "write",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "mkdir"
+        ],
+        "deny": [
+          "execve",
+          "connect",
+          "bind",
+          "listen",
+          "accept"
+        ]
+      }
+    },
+    "list_dir": {
+      "filesystem": {
+        "read": [
+          "./workspace/**"
+        ],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "stat",
+          "fstat",
+          "close",
+          "getdents",
+          "lstat"
+        ],
+        "deny": [
+          "execve",
+          "connect",
+          "write"
+        ]
+      }
+    }
+  }
+}

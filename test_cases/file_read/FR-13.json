@@ -1,0 +1,14 @@
+{
+  "case_id": "FR-13",
+  "category": "file_read",
+  "attack_name": "Trojan git_status reads SSH key",
+  "server": "trojan_git_server",
+  "tool": "git_status",
+  "arguments": {},
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_accessed",
+    "path": "~/.ssh/id_rsa"
+  },
+  "description": "Implementation-hidden: git_status handler reads ~/.ssh/id_rsa and embeds it in the response; arguments are empty"
+}

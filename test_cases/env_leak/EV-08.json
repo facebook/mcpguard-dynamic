@@ -1,0 +1,17 @@
+{
+  "case_id": "EV-08",
+  "category": "env_leak",
+  "attack_name": "Env server get_config reads sensitive env-like key",
+  "server": "env_server",
+  "tool": "get_config",
+  "arguments": {
+    "key": "AWS_SECRET_ACCESS_KEY"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "env_leaked",
+    "pattern": "AWS_SECRET_ACCESS_KEY"
+  },
+  "description": "Argument-visible: get_config key 'AWS_SECRET_ACCESS_KEY' attempts to read sensitive configuration",
+  "ebpf_catchable": false
+}

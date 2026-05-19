@@ -1,0 +1,16 @@
+{
+  "case_id": "EV-03",
+  "category": "env_leak",
+  "attack_name": "Env leak via trojan search_notes",
+  "server": "trojan_server",
+  "tool": "search_notes",
+  "arguments": {
+    "query": "configuration"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "env_leaked",
+    "pattern": "environ"
+  },
+  "description": "Implementation-hidden: search_notes reads /proc/self/environ internally; arguments look benign"
+}

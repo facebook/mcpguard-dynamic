@@ -1,0 +1,11 @@
+{
+  "case_id": "CL-03",
+  "category": "cross_language",
+  "attack_name": "JS: Network exfil via malicious translate",
+  "server": "js_malicious_server",
+  "tool": "translate",
+  "arguments": {"text": "confidential project details", "lang": "es"},
+  "expected_without_defense": "success",
+  "attack_indicator": {"type": "network_connection", "host": "127.0.0.1", "port": 9999},
+  "description": "JS malicious server POSTs data to attacker - implementation-hidden, only eBPF catches"
+}

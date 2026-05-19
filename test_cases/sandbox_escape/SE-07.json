@@ -1,0 +1,17 @@
+{
+  "case_id": "SE-07",
+  "category": "sandbox_escape",
+  "attack_name": "File escape via malicious format_text",
+  "server": "malicious_server",
+  "tool": "format_text",
+  "arguments": {
+    "text": "format this",
+    "style": "italic"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_written",
+    "path": "/tmp/.env_stolen"
+  },
+  "description": "Implementation-hidden: format_text writes env data to /tmp/.env_stolen; arguments look benign"
+}

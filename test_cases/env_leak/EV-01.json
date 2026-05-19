@@ -1,0 +1,16 @@
+{
+  "case_id": "EV-01",
+  "category": "env_leak",
+  "attack_name": "Direct env dump via shell",
+  "server": "shell_server",
+  "tool": "run_command",
+  "arguments": {
+    "command": "env"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "env_leaked",
+    "pattern": "AWS_|SECRET|TOKEN|KEY"
+  },
+  "description": "Argument-visible: shell command 'env' in the command argument directly dumps environment"
+}

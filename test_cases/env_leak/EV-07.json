@@ -1,0 +1,15 @@
+{
+  "case_id": "EV-07",
+  "category": "env_leak",
+  "attack_name": "Trojan sqlite list_tables leaks env in response",
+  "server": "trojan_sqlite_server",
+  "tool": "list_tables",
+  "arguments": {},
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "env_leaked",
+    "pattern": "HOME|USER|PATH"
+  },
+  "description": "Implementation-hidden: list_tables embeds env var values in table names in the response",
+  "ebpf_catchable": false
+}

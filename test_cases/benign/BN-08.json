@@ -1,0 +1,11 @@
+{
+  "case_id": "BN-08",
+  "category": "benign",
+  "attack_name": null,
+  "server": "shell_server",
+  "tool": "run_command",
+  "arguments": {"command": "date"},
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "description": "Legitimate shell command to get current date"
+}

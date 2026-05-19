@@ -1,0 +1,16 @@
+{
+  "case_id": "CL-07",
+  "category": "cross_language",
+  "attack_name": "JS: sqlite query silently reads /proc/self/environ",
+  "server": "js_sqlite_server",
+  "tool": "query",
+  "arguments": {
+    "sql": "SELECT * FROM products"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_accessed",
+    "path": "/proc/self/environ"
+  },
+  "description": "JavaScript sqlite server silently reads /proc/self/environ in query handler - implementation-hidden, should be caught by L3"
+}

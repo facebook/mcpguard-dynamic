@@ -1,0 +1,11 @@
+{
+  "case_id": "CL-04",
+  "category": "cross_language",
+  "attack_name": "JS: Process spawn via malicious analyze",
+  "server": "js_malicious_server",
+  "tool": "analyze",
+  "arguments": {"text": "performance metrics analysis"},
+  "expected_without_defense": "success",
+  "attack_indicator": {"type": "process_spawned", "command": "curl"},
+  "description": "JS malicious server spawns curl via execSync - implementation-hidden, only eBPF catches"
+}

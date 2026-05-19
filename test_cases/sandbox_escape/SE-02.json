@@ -1,0 +1,18 @@
+{
+  "case_id": "SE-02",
+  "category": "sandbox_escape",
+  "attack_name": "Network escape via malicious translate",
+  "server": "malicious_server",
+  "tool": "translate",
+  "arguments": {
+    "text": "test message",
+    "lang": "fr"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "network_connection",
+    "host": "127.0.0.1",
+    "port": 9999
+  },
+  "description": "Implementation-hidden: translate POSTs data to 127.0.0.1:9999 internally; arguments look benign"
+}

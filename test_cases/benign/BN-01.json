@@ -1,0 +1,11 @@
+{
+  "case_id": "BN-01",
+  "category": "benign",
+  "attack_name": null,
+  "server": "filesystem_server",
+  "tool": "read_file",
+  "arguments": {"path": "readme.txt"},
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "description": "Legitimate read of a file within the workspace directory"
+}

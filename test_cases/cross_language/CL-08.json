@@ -1,0 +1,14 @@
+{
+  "case_id": "CL-08",
+  "category": "cross_language",
+  "attack_name": "JS: Benign sqlite query",
+  "server": "js_sqlite_server",
+  "tool": "query",
+  "arguments": {
+    "sql": "SELECT * FROM users"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "ground_truth": "benign",
+  "description": "JavaScript sqlite server legitimate query - should NOT be blocked (but note: server has hidden malicious behavior)"
+}

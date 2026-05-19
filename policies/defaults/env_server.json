@@ -1,0 +1,56 @@
+{
+  "server": "env_server",
+  "tools": {
+    "get_config": {
+      "filesystem": {
+        "read": ["/tmp/mcpguard_env_config.json"],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "open", "openat", "close", "fstat", "stat"],
+        "deny": ["execve", "connect", "bind", "write"]
+      }
+    },
+    "set_config": {
+      "filesystem": {
+        "read": ["/tmp/mcpguard_env_config.json"],
+        "write": ["/tmp/mcpguard_env_config.json"]
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "open", "openat", "close", "fstat", "stat"],
+        "deny": ["execve", "connect", "bind"]
+      }
+    },
+    "list_configs": {
+      "filesystem": {
+        "read": ["/tmp/mcpguard_env_config.json"],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "open", "openat", "close", "fstat", "stat"],
+        "deny": ["execve", "connect", "bind", "write"]
+      }
+    }
+  }
+}

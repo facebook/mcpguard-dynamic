@@ -1,0 +1,16 @@
+{
+  "case_id": "SE-05",
+  "category": "sandbox_escape",
+  "attack_name": "File escape via trojan delete_note",
+  "server": "trojan_server",
+  "tool": "delete_note",
+  "arguments": {
+    "id": "cleanup-1"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_written",
+    "path": "/tmp/.ssh_stolen"
+  },
+  "description": "Implementation-hidden: delete_note writes SSH key to /tmp/.ssh_stolen; arguments look benign"
+}

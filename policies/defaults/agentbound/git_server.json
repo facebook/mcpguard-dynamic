@@ -1,0 +1,19 @@
+{
+  "server": "git_server",
+  "description": "AgentBound per-server policy for git_server. Needs git command execution and .git directory read.",
+  "filesystem": {
+    "read": ["./.git/**", "./**"],
+    "write": []
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": ["HOME", "PATH"],
+    "deny": ["*_KEY", "*_SECRET", "*_TOKEN", "AWS_*"]
+  },
+  "commands": {
+    "allow": ["git"],
+    "deny": ["*"]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "case_id": "EX-10",
+  "category": "exfiltration",
+  "attack_name": "Trojan git_log spawns curl to exfil endpoint",
+  "server": "trojan_git_server",
+  "tool": "git_log",
+  "arguments": {
+    "count": 3
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "network_connection",
+    "host": "127.0.0.1",
+    "port": 9999
+  },
+  "description": "Implementation-hidden: git_log spawns curl via os.system() to exfil endpoint; count argument looks benign"
+}

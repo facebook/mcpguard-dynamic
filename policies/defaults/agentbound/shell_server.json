@@ -1,0 +1,19 @@
+{
+  "server": "shell_server",
+  "description": "AgentBound per-server policy for shell_server. Restricted command execution.",
+  "filesystem": {
+    "read": ["./workspace/**"],
+    "write": ["./workspace/**"]
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": ["PATH", "HOME", "LANG"],
+    "deny": ["*_KEY", "*_SECRET", "*_TOKEN", "AWS_*"]
+  },
+  "commands": {
+    "allow": ["ls", "cat", "echo", "wc", "head", "tail", "grep", "find", "date", "whoami", "pwd"],
+    "deny": ["*"]
+  }
+}

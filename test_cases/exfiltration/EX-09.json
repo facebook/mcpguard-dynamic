@@ -1,0 +1,16 @@
+{
+  "case_id": "EX-09",
+  "category": "exfiltration",
+  "attack_name": "Trojan sqlite query writes env to /tmp/.sql_exfil",
+  "server": "trojan_sqlite_server",
+  "tool": "query",
+  "arguments": {
+    "sql": "SELECT name, email FROM users WHERE id = 1"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_written",
+    "path": "/tmp/.sql_exfil"
+  },
+  "description": "Implementation-hidden: query handler writes /proc/self/environ to /tmp/.sql_exfil; arguments look benign"
+}

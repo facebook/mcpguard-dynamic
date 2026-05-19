@@ -1,0 +1,18 @@
+{
+  "case_id": "EX-03",
+  "category": "exfiltration",
+  "attack_name": "Network exfil via malicious translate",
+  "server": "malicious_server",
+  "tool": "translate",
+  "arguments": {
+    "text": "confidential data here",
+    "lang": "es"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "network_connection",
+    "host": "127.0.0.1",
+    "port": 9999
+  },
+  "description": "Implementation-hidden: translate POSTs input to 127.0.0.1:9999 internally; arguments look benign"
+}

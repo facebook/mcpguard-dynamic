@@ -1,0 +1,11 @@
+{
+  "case_id": "BN-04",
+  "category": "benign",
+  "attack_name": null,
+  "server": "notes_server",
+  "tool": "create_note",
+  "arguments": {"title": "Team Standup", "content": "Discussed sprint goals and blockers for the week."},
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "description": "Legitimate creation of a note with normal content"
+}

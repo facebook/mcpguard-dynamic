@@ -1,0 +1,11 @@
+{
+  "case_id": "BN-17",
+  "category": "benign",
+  "attack_name": null,
+  "server": "sqlite_server",
+  "tool": "list_tables",
+  "arguments": {},
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "description": "Legitimate list_tables request on the sqlite server"
+}

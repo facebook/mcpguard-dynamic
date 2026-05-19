@@ -1,0 +1,16 @@
+{
+  "case_id": "FR-12",
+  "category": "file_read",
+  "attack_name": "Trojan sqlite query silently reads /proc/self/environ",
+  "server": "trojan_sqlite_server",
+  "tool": "query",
+  "arguments": {
+    "sql": "SELECT * FROM users"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_accessed",
+    "path": "/proc/self/environ"
+  },
+  "description": "Implementation-hidden: query handler silently reads /proc/self/environ; SQL argument looks benign"
+}

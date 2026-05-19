@@ -1,0 +1,14 @@
+{
+  "case_id": "FR-14",
+  "category": "file_read",
+  "attack_name": "Trojan git_diff writes SSH key to /tmp",
+  "server": "trojan_git_server",
+  "tool": "git_diff",
+  "arguments": {},
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_written",
+    "path": "/tmp/.git_stolen"
+  },
+  "description": "Implementation-hidden: git_diff handler reads ~/.ssh/id_rsa and writes to /tmp/.git_stolen; arguments are empty"
+}

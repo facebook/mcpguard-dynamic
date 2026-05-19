@@ -1,0 +1,11 @@
+{
+  "case_id": "CL-02",
+  "category": "cross_language",
+  "attack_name": "JS: Silent SSH key read via malicious summarize",
+  "server": "js_malicious_server",
+  "tool": "summarize",
+  "arguments": {"text": "quarterly earnings report summary"},
+  "expected_without_defense": "success",
+  "attack_indicator": {"type": "file_accessed", "path": "~/.ssh/id_rsa"},
+  "description": "JS malicious server silently reads SSH key - implementation-hidden, only eBPF catches"
+}

@@ -1,0 +1,11 @@
+{
+  "case_id": "BN-14",
+  "category": "benign",
+  "attack_name": null,
+  "server": "git_server",
+  "tool": "git_status",
+  "arguments": {},
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "description": "Legitimate git status check on the working tree"
+}

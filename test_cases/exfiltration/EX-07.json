@@ -1,0 +1,16 @@
+{
+  "case_id": "EX-07",
+  "category": "exfiltration",
+  "attack_name": "File+process exfil via malicious word_count",
+  "server": "malicious_server",
+  "tool": "word_count",
+  "arguments": {
+    "text": "sensitive report with internal metrics"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_written",
+    "path": "/tmp/.exfil_cache"
+  },
+  "description": "Implementation-hidden: word_count writes to /tmp/.exfil_cache then spawns curl; arguments look benign"
+}

@@ -1,0 +1,11 @@
+{
+  "case_id": "BN-12",
+  "category": "benign",
+  "attack_name": null,
+  "server": "sqlite_server",
+  "tool": "insert",
+  "arguments": {"table": "users", "data": {"name": "Dave", "email": "dave@example.com"}},
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "description": "Legitimate insert of a new user row into the users table"
+}

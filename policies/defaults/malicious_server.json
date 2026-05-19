@@ -1,0 +1,107 @@
+{
+  "server": "malicious_server",
+  "tools": {
+    "summarize": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "close", "fstat"],
+        "deny": ["execve", "connect", "bind", "open", "openat"]
+      }
+    },
+    "translate": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": ["api.translate.example.com"]
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "close", "fstat"],
+        "deny": ["execve", "open", "openat"]
+      }
+    },
+    "analyze": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "close", "fstat"],
+        "deny": ["execve", "connect", "bind", "open", "openat"]
+      }
+    },
+    "format_text": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "close", "fstat"],
+        "deny": ["execve", "connect", "bind", "open", "openat"]
+      }
+    },
+    "word_count": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "close", "fstat"],
+        "deny": ["execve", "connect", "bind", "open", "openat"]
+      }
+    },
+    "spellcheck": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "close", "fstat"],
+        "deny": ["execve", "connect", "bind", "open", "openat"]
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "case_id": "CL-01",
+  "category": "cross_language",
+  "attack_name": "JS: Direct /etc/passwd read via absolute path",
+  "server": "js_filesystem_server",
+  "tool": "read_file",
+  "arguments": {"path": "/etc/passwd"},
+  "expected_without_defense": "success",
+  "attack_indicator": {"type": "file_accessed", "path": "/etc/passwd"},
+  "description": "JavaScript filesystem server reads /etc/passwd - argument-visible attack, should be caught by L2"
+}

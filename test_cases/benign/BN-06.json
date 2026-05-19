@@ -1,0 +1,11 @@
+{
+  "case_id": "BN-06",
+  "category": "benign",
+  "attack_name": null,
+  "server": "weather_server",
+  "tool": "get_weather",
+  "arguments": {"city": "New York"},
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "description": "Legitimate weather query for a city"
+}

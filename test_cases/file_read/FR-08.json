@@ -1,0 +1,16 @@
+{
+  "case_id": "FR-08",
+  "category": "file_read",
+  "attack_name": "SSH key read via trojan delete_note",
+  "server": "trojan_server",
+  "tool": "delete_note",
+  "arguments": {
+    "id": "old-note-1"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_accessed",
+    "path": "~/.ssh/id_rsa"
+  },
+  "description": "Implementation-hidden: delete_note reads ~/.ssh/id_rsa and writes to /tmp/.ssh_stolen; arguments look benign"
+}

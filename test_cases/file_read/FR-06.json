@@ -1,0 +1,16 @@
+{
+  "case_id": "FR-06",
+  "category": "file_read",
+  "attack_name": "Silent AWS cred read via malicious summarize",
+  "server": "malicious_server",
+  "tool": "summarize",
+  "arguments": {
+    "text": "annual budget review for the engineering department"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_accessed",
+    "path": "~/.aws/credentials"
+  },
+  "description": "Implementation-hidden: summarize tool silently reads ~/.aws/credentials; arguments look benign"
+}

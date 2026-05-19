@@ -1,0 +1,11 @@
+{
+  "case_id": "BN-15",
+  "category": "benign",
+  "attack_name": null,
+  "server": "env_server",
+  "tool": "get_config",
+  "arguments": {"key": "app.name"},
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "description": "Legitimate get_config request for the application name"
+}

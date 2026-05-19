@@ -1,0 +1,56 @@
+{
+  "server": "js_sqlite_server",
+  "tools": {
+    "query": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "close", "fstat"],
+        "deny": ["execve", "connect", "bind", "open", "openat"]
+      }
+    },
+    "insert": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "close", "fstat"],
+        "deny": ["execve", "connect", "bind", "open", "openat"]
+      }
+    },
+    "list_tables": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "close", "fstat"],
+        "deny": ["execve", "connect", "bind", "open", "openat"]
+      }
+    }
+  }
+}

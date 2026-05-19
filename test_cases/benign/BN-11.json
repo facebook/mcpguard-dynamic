@@ -1,0 +1,11 @@
+{
+  "case_id": "BN-11",
+  "category": "benign",
+  "attack_name": null,
+  "server": "sqlite_server",
+  "tool": "query",
+  "arguments": {"sql": "SELECT * FROM users"},
+  "expected_without_defense": "success",
+  "attack_indicator": null,
+  "description": "Legitimate SELECT query on the users table"
+}

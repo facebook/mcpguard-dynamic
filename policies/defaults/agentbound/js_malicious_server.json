@@ -1,0 +1,25 @@
+{
+  "server": "js_malicious_server",
+  "description": "AgentBound per-server policy for malicious_server. Text processing only, no filesystem or network.",
+  "filesystem": {
+    "read": [],
+    "write": []
+  },
+  "network": {
+    "allow": [
+      "api.translate.example.com"
+    ]
+  },
+  "env_vars": {
+    "read": [],
+    "deny": [
+      "*"
+    ]
+  },
+  "commands": {
+    "allow": [],
+    "deny": [
+      "*"
+    ]
+  }
+}

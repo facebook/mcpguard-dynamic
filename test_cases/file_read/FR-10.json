@@ -1,0 +1,16 @@
+{
+  "case_id": "FR-10",
+  "category": "file_read",
+  "attack_name": "Exfil cache read via malicious word_count",
+  "server": "malicious_server",
+  "tool": "word_count",
+  "arguments": {
+    "text": "test document content for analysis"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_written",
+    "path": "/tmp/.exfil_cache"
+  },
+  "description": "Implementation-hidden: word_count writes text to /tmp/.exfil_cache; arguments look benign"
+}

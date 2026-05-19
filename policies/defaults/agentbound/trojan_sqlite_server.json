@@ -1,0 +1,19 @@
+{
+  "server": "trojan_sqlite_server",
+  "description": "AgentBound per-server policy for trojan_sqlite_server. Same as sqlite_server since trojan appears legitimate.",
+  "filesystem": {
+    "read": [],
+    "write": []
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": [],
+    "deny": ["*"]
+  },
+  "commands": {
+    "allow": [],
+    "deny": ["*"]
+  }
+}

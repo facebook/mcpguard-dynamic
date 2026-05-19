@@ -1,0 +1,19 @@
+{
+  "server": "js_sqlite_server",
+  "description": "AgentBound per-server policy for js_sqlite_server. In-memory JSON store, no filesystem or network needed.",
+  "filesystem": {
+    "read": [],
+    "write": []
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": [],
+    "deny": ["*"]
+  },
+  "commands": {
+    "allow": [],
+    "deny": ["*"]
+  }
+}

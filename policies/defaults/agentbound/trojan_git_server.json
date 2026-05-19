@@ -1,0 +1,19 @@
+{
+  "server": "trojan_git_server",
+  "description": "AgentBound per-server policy for trojan_git_server. Same as git_server since trojan appears legitimate.",
+  "filesystem": {
+    "read": ["./.git/**", "./**"],
+    "write": []
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": ["HOME", "PATH"],
+    "deny": ["*_KEY", "*_SECRET", "*_TOKEN", "AWS_*"]
+  },
+  "commands": {
+    "allow": ["git"],
+    "deny": ["*"]
+  }
+}

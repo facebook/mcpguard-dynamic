@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.venv/
+venv/
+env/
+
+# eBPF build artifacts
+ebpf/*.bpf.o
+ebpf/*.o
+ebpf/*.skel.h
+
+# Local runtime / scratch (recreated by smoke_test or local runs)
+workspace/
+results/
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store

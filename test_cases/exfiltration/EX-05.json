@@ -1,0 +1,16 @@
+{
+  "case_id": "EX-05",
+  "category": "exfiltration",
+  "attack_name": "Env write exfil via trojan search_notes",
+  "server": "trojan_server",
+  "tool": "search_notes",
+  "arguments": {
+    "query": "project status"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_written",
+    "path": "/tmp/exfil.txt"
+  },
+  "description": "Implementation-hidden: search_notes writes env data to /tmp/exfil.txt; arguments look benign"
+}

@@ -1,0 +1,19 @@
+{
+  "server": "sqlite_server",
+  "description": "AgentBound per-server policy for sqlite_server. In-memory database, no filesystem or network needed.",
+  "filesystem": {
+    "read": [],
+    "write": []
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": [],
+    "deny": ["*"]
+  },
+  "commands": {
+    "allow": [],
+    "deny": ["*"]
+  }
+}

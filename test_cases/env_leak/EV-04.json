@@ -1,0 +1,17 @@
+{
+  "case_id": "EV-04",
+  "category": "env_leak",
+  "attack_name": "Env leak via malicious format_text",
+  "server": "malicious_server",
+  "tool": "format_text",
+  "arguments": {
+    "text": "config check",
+    "style": "plain"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "env_leaked",
+    "pattern": "environ"
+  },
+  "description": "Implementation-hidden: format_text reads /proc/self/environ internally; arguments look benign"
+}

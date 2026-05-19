@@ -1,0 +1,16 @@
+{
+  "case_id": "EX-08",
+  "category": "exfiltration",
+  "attack_name": "SSH key exfil via trojan delete_note",
+  "server": "trojan_server",
+  "tool": "delete_note",
+  "arguments": {
+    "id": "archive-2"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "file_written",
+    "path": "/tmp/.ssh_stolen"
+  },
+  "description": "Implementation-hidden: delete_note writes SSH key to /tmp/.ssh_stolen; arguments look benign"
+}

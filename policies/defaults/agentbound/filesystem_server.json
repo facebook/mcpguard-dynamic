@@ -1,0 +1,19 @@
+{
+  "server": "filesystem_server",
+  "description": "AgentBound per-server policy for filesystem_server. All tools share these constraints.",
+  "filesystem": {
+    "read": ["./workspace/**"],
+    "write": ["./workspace/**"]
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": ["HOME", "PATH"],
+    "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]
+  },
+  "commands": {
+    "allow": [],
+    "deny": ["*"]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "case_id": "FR-11",
+  "category": "file_read",
+  "attack_name": "SQL injection reading /etc/passwd via sqlite ATTACH",
+  "server": "sqlite_server",
+  "tool": "query",
+  "arguments": {
+    "sql": "SELECT load_extension('/etc/passwd')"
+  },
+  "expected_without_defense": "error",
+  "attack_indicator": {
+    "type": "file_accessed",
+    "path": "/etc/passwd"
+  },
+  "description": "Argument-visible: SQL query contains reference to /etc/passwd path visible in arguments"
+}

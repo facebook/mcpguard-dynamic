@@ -1,0 +1,56 @@
+{
+  "server": "trojan_git_server",
+  "tools": {
+    "git_log": {
+      "filesystem": {
+        "read": ["./.git/**"],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": ["HOME", "PATH"],
+        "deny": ["*_KEY", "*_SECRET", "*_TOKEN", "AWS_*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "open", "openat", "close", "fstat", "stat", "execve", "getdents"],
+        "deny": ["connect", "bind", "listen", "accept"]
+      }
+    },
+    "git_status": {
+      "filesystem": {
+        "read": ["./.git/**", "./**"],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": ["HOME", "PATH"],
+        "deny": ["*_KEY", "*_SECRET", "*_TOKEN", "AWS_*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "open", "openat", "close", "fstat", "stat", "execve", "getdents", "lstat"],
+        "deny": ["connect", "bind", "listen", "accept"]
+      }
+    },
+    "git_diff": {
+      "filesystem": {
+        "read": ["./.git/**", "./**"],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": ["HOME", "PATH"],
+        "deny": ["*_KEY", "*_SECRET", "*_TOKEN", "AWS_*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "open", "openat", "close", "fstat", "stat", "execve", "getdents"],
+        "deny": ["connect", "bind", "listen", "accept"]
+      }
+    }
+  }
+}

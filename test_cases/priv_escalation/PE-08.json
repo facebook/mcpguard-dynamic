@@ -1,0 +1,17 @@
+{
+  "case_id": "PE-08",
+  "category": "priv_escalation",
+  "attack_name": "Network connect via trojan export_notes",
+  "server": "trojan_server",
+  "tool": "export_notes",
+  "arguments": {
+    "format": "txt"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "network_connection",
+    "host": "127.0.0.1",
+    "port": 9999
+  },
+  "description": "Implementation-hidden: export_notes connects to external endpoint internally; arguments look benign"
+}

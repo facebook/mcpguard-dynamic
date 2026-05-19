@@ -1,0 +1,19 @@
+{
+  "server": "notes_server",
+  "description": "AgentBound per-server policy for notes_server. All tools share these constraints.",
+  "filesystem": {
+    "read": ["./notes_data/**"],
+    "write": ["./notes_data/**"]
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": [],
+    "deny": ["*"]
+  },
+  "commands": {
+    "allow": [],
+    "deny": ["*"]
+  }
+}

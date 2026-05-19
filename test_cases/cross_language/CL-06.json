@@ -1,0 +1,16 @@
+{
+  "case_id": "CL-06",
+  "category": "cross_language",
+  "attack_name": "JS: SQL injection in sqlite query",
+  "server": "js_sqlite_server",
+  "tool": "query",
+  "arguments": {
+    "sql": "SELECT * FROM users; DROP TABLE users"
+  },
+  "expected_without_defense": "error",
+  "attack_indicator": {
+    "type": "sql_injection",
+    "pattern": "DROP TABLE"
+  },
+  "description": "JavaScript sqlite server SQL injection with DROP TABLE - argument-visible attack, should be caught by L2"
+}

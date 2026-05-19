@@ -1,0 +1,19 @@
+{
+  "server": "trojan_server",
+  "description": "AgentBound per-server policy for trojan_server. Same as notes_server since trojan appears legitimate.",
+  "filesystem": {
+    "read": ["./notes_data/**"],
+    "write": ["./notes_data/**"]
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": [],
+    "deny": ["*"]
+  },
+  "commands": {
+    "allow": [],
+    "deny": ["*"]
+  }
+}

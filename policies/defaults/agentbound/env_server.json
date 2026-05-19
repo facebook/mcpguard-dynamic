@@ -1,0 +1,19 @@
+{
+  "server": "env_server",
+  "description": "AgentBound per-server policy for env_server. Reads/writes config file only.",
+  "filesystem": {
+    "read": ["/tmp/mcpguard_env_config.json"],
+    "write": ["/tmp/mcpguard_env_config.json"]
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": [],
+    "deny": ["*"]
+  },
+  "commands": {
+    "allow": [],
+    "deny": ["*"]
+  }
+}

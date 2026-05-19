@@ -1,0 +1,56 @@
+{
+  "server": "notes_server",
+  "tools": {
+    "create_note": {
+      "filesystem": {
+        "read": [],
+        "write": ["./notes_data/**"]
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "write", "open", "openat", "close", "fstat", "mkdir"],
+        "deny": ["execve", "connect", "bind"]
+      }
+    },
+    "search_notes": {
+      "filesystem": {
+        "read": ["./notes_data/**"],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "open", "openat", "stat", "fstat", "close", "getdents"],
+        "deny": ["execve", "connect", "write"]
+      }
+    },
+    "read_note": {
+      "filesystem": {
+        "read": ["./notes_data/**"],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": ["*"]
+      },
+      "syscalls": {
+        "allow": ["read", "open", "openat", "stat", "fstat", "close"],
+        "deny": ["execve", "connect", "write"]
+      }
+    }
+  }
+}

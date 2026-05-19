@@ -1,0 +1,16 @@
+{
+  "case_id": "EV-09",
+  "category": "env_leak",
+  "attack_name": "Trojan sqlite query reads /proc/self/environ for env leak",
+  "server": "trojan_sqlite_server",
+  "tool": "query",
+  "arguments": {
+    "sql": "SELECT * FROM products"
+  },
+  "expected_without_defense": "success",
+  "attack_indicator": {
+    "type": "env_leaked",
+    "pattern": "PATH|HOME|USER"
+  },
+  "description": "Implementation-hidden: query handler reads /proc/self/environ which contains env vars; SQL argument looks benign"
+}
