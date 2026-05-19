@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
+/* Copyright (c) Meta Platforms, Inc. and affiliates. */
 /*
  * MCPGuard Proc Guard - BPF LSM program for process/exec control.
  *
