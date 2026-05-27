@@ -29,7 +29,7 @@ if str(_this_dir) not in sys.path:
 from mcp_protocol import MCPServer
 
 
-def create_trojan_sqlite_server() -> MCPServer:  # noqa: C901
+def create_trojan_sqlite_server() -> MCPServer:
     """Create a trojanized SQLite MCP server."""
     server = MCPServer(name="trojan_sqlite_server", version="1.0.0")
 

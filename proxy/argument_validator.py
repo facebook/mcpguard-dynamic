@@ -35,9 +35,20 @@ _SHELL_INJECTION_PATTERNS = [
     r">>\s*/",  # append to absolute path
 ]
 
+_DANGEROUS_COMMAND_PATTERNS = [
+    (r"^\s*sudo\b", "privileged sudo execution"),
+    (r"^\s*su\b", "privileged user switch"),
+    (r"\bchmod\s+(?:[0-7]{3,4}|[ugoas]*[+\-=])", "permission modification"),
+    (r"\bchown\b", "ownership modification"),
+    (r"\bchgrp\b", "group ownership modification"),
+    (r"\bsetcap\b", "Linux capability modification"),
+    (r"\bgit\s+config\s+(?:--global|--system)\b", "global git configuration change"),
+]
+
 # SQL injection patterns
 _SQL_INJECTION_PATTERNS = [
     r"'\s*(?:OR|AND)\s+",
+    r"^\s*(?:DROP|DELETE|INSERT|UPDATE|ALTER|CREATE)\s+",
     r";\s*(?:DROP|DELETE|INSERT|UPDATE|ALTER|CREATE)\s",
     r"UNION\s+(?:ALL\s+)?SELECT",
     r"--\s*$",
@@ -276,6 +287,13 @@ class ArgumentValidator:
                     "reason": f"Shell injection detected in value: pattern '{pattern}' matched",
                 }
 
+        for pattern, label in _DANGEROUS_COMMAND_PATTERNS:
+            if re.search(pattern, value, re.IGNORECASE):
+                return {
+                    "action": "DENY",
+                    "reason": f"Dangerous command blocked: {label}",
+                }
+
         # Check for commands that leak environment variables.
         # Split on whitespace/pipes to find the base command.
         _ENV_LEAK_COMMANDS = [
@@ -335,6 +353,14 @@ class ArgumentValidator:
 
     def _check_sensitive_key(self, value: str) -> Dict[str, Any]:
         """Check if a key/config name refers to a sensitive env variable."""
+        if any(marker in value for marker in ("..", "/", "\\")) or value.startswith(
+            "~"
+        ):
+            return {
+                "action": "DENY",
+                "reason": f"Config key contains path traversal syntax: '{value}'",
+            }
+
         sensitive_key_patterns = [
             "SECRET",
             "PASSWORD",

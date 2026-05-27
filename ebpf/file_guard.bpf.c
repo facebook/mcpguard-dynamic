@@ -19,11 +19,13 @@
  *   8. Emit an audit event via perf buffer
  */
 
-#include <bpf/bpf_core_read.h>
+/* clang-format off */
+#include "vmlinux.h"
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
+#include <bpf/bpf_core_read.h>
 #include "common.h"
-#include "vmlinux.h"
+/* clang-format on */
 
 char LICENSE[] SEC("license") = "GPL";
 
@@ -73,7 +75,9 @@ struct {
 static __always_inline int path_starts_with(
     const char* path,
     const char* prefix) {
-  /* Bounded string prefix comparison for BPF verifier. */
+  /* Bounded string prefix comparison for BPF verifier.
+   * Directory prefixes are normalized with a trailing slash in userspace, so
+   * /usr/lib/ does not match /usr/lib64. */
   for (int i = 0; i < MAX_PATH_LEN; i++) {
     if (prefix[i] == '\0')
       return 1; /* prefix ended = match */

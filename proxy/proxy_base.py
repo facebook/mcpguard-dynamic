@@ -20,6 +20,7 @@ Configurations:
 """
 
 import json
+import os
 import subprocess
 import sys
 import time
@@ -79,6 +80,7 @@ class MCPProxy:
         config: str = "C0",
         policy_dir: Optional[str] = None,
         workspace_dir: Optional[str] = None,
+        audit_log_path: Optional[str] = None,
     ):
         self.server_name = server_name
         self.config = config
@@ -91,6 +93,9 @@ class MCPProxy:
             workspace_dir = str(_experiments_root / "workspace")
 
         self.workspace_dir = workspace_dir
+        self.audit_log_path = Path(audit_log_path) if audit_log_path else None
+        if self.audit_log_path:
+            self.audit_log_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Initialize defense layers
         self.policy_engine = PolicyEngine(policy_dir=policy_dir)
@@ -106,16 +111,23 @@ class MCPProxy:
         self._server_proc: Optional[subprocess.Popen] = None
         self._req_counter = 0
 
-    def start_server(self) -> None:
+    def start_server(self) -> None:  # noqa: C901
         """Spawn the MCP server as a subprocess."""
         script_rel = SERVER_SCRIPTS.get(self.server_name)
         if script_rel is None:
             raise ValueError(f"Unknown server: {self.server_name}")
 
         script_path = str(self._experiments_root / script_rel)
-        env = dict(__import__("os").environ)
+        env = dict(os.environ)
         env["MCP_WORKSPACE"] = self.workspace_dir
         env["MCP_NOTES_DIR"] = str(self._experiments_root / "notes_data")
+
+        test_home = env.get("MCPGUARD_TEST_HOME")
+        if test_home:
+            env["HOME"] = test_home
+        env.setdefault("AWS_SECRET_ACCESS_KEY", "MCPGUARD_TEST_SECRET")
+        env.setdefault("MCPGUARD_API_TOKEN", "MCPGUARD_TEST_TOKEN")
+        env.setdefault("SECRET_KEY", "MCPGUARD_TEST_SECRET_KEY")
 
         # Environment sanitization: strip sensitive variables before the
         # server process starts. Python caches os.environ at interpreter
@@ -137,6 +149,13 @@ class MCPProxy:
             for key in list(env.keys()):
                 if any(p in key.upper() for p in sensitive_patterns):
                     del env[key]
+
+        if "ebpf" in self.active_layers and not self.ebpf_sandbox.is_available():
+            raise RuntimeError(
+                "eBPF defense requested but BPF LSM programs/maps are not loaded. "
+                "Build and install experiments/ebpf with root privileges before "
+                f"running {self.config}."
+            )
 
         interpreter = "node" if script_path.endswith(".js") else sys.executable
         self._server_proc = subprocess.Popen(
@@ -161,15 +180,28 @@ class MCPProxy:
                 },
             }
         )
-        self._read_from_server()  # consume init response
+        self._read_from_server()
 
         # Activate eBPF sandbox if configured
         if "ebpf" in self.active_layers and self._server_proc:
             server_policy = self.policy_engine.get_server_policy(self.server_name)
-            self.ebpf_sandbox.activate_policy(
-                pid=self._server_proc.pid,
-                policy=server_policy,
-            )
+            try:
+                self.ebpf_sandbox.activate_policy(
+                    pid=self._server_proc.pid,
+                    policy=server_policy,
+                )
+            except Exception:
+                try:
+                    self.ebpf_sandbox.deactivate_policy(self._server_proc.pid)
+                except Exception:
+                    pass
+                try:
+                    self._server_proc.terminate()
+                    self._server_proc.wait(timeout=5)
+                except Exception:
+                    self._server_proc.kill()
+                self._server_proc = None
+                raise
 
     def stop_server(self) -> None:
         """Stop the MCP server subprocess."""
@@ -230,7 +262,9 @@ class MCPProxy:
                 defense_info["layer"] = "agentbound"
                 defense_info["reason"] = ab_result["reason"]
                 defense_info["latency_ms"] = (time.monotonic() - start_time) * 1000
-                return self._make_blocked_result(ab_result["reason"]), defense_info
+                result = self._make_blocked_result(ab_result["reason"])
+                self._write_audit_event(tool_name, arguments, result, defense_info)
+                return result, defense_info
 
         # --- Layer L1: Policy Engine ---
         if "policy" in self.active_layers:
@@ -244,7 +278,9 @@ class MCPProxy:
                 defense_info["layer"] = "L1-policy"
                 defense_info["reason"] = policy_result["reason"]
                 defense_info["latency_ms"] = (time.monotonic() - start_time) * 1000
-                return self._make_blocked_result(policy_result["reason"]), defense_info
+                result = self._make_blocked_result(policy_result["reason"])
+                self._write_audit_event(tool_name, arguments, result, defense_info)
+                return result, defense_info
 
         # --- Layer L2: Argument Validator ---
         if "argval" in self.active_layers:
@@ -258,7 +294,9 @@ class MCPProxy:
                 defense_info["layer"] = "L2-argval"
                 defense_info["reason"] = argval_result["reason"]
                 defense_info["latency_ms"] = (time.monotonic() - start_time) * 1000
-                return self._make_blocked_result(argval_result["reason"]), defense_info
+                result = self._make_blocked_result(argval_result["reason"])
+                self._write_audit_event(tool_name, arguments, result, defense_info)
+                return result, defense_info
 
         # --- Forward to server ---
         self._req_counter += 1
@@ -290,10 +328,38 @@ class MCPProxy:
                 defense_info["layer"] = "response-sanitizer"
                 defense_info["reason"] = sanitized
                 defense_info["latency_ms"] = (time.monotonic() - start_time) * 1000
-                return self._make_blocked_result(sanitized), defense_info
+                result = self._make_blocked_result(sanitized)
+                self._write_audit_event(tool_name, arguments, result, defense_info)
+                return result, defense_info
 
         defense_info["latency_ms"] = (time.monotonic() - start_time) * 1000
+        self._write_audit_event(tool_name, arguments, result, defense_info)
         return result, defense_info
+
+    def _write_audit_event(
+        self,
+        tool_name: str,
+        arguments: Dict[str, Any],
+        result: Dict[str, Any],
+        defense_info: Dict[str, Any],
+    ) -> None:
+        """Append a structured audit event when an audit log is configured."""
+        if self.audit_log_path is None:
+            return
+        event = {
+            "timestamp": time.time(),
+            "server": self.server_name,
+            "tool": tool_name,
+            "config": self.config,
+            "action": "BLOCKED" if defense_info.get("blocked") else "ALLOWED",
+            "layer": defense_info.get("layer"),
+            "reason": defense_info.get("reason"),
+            "latency_ms": defense_info.get("latency_ms"),
+            "argument_keys": sorted(arguments.keys()),
+            "is_error": result.get("isError", False),
+        }
+        with self.audit_log_path.open("a", encoding="utf-8") as audit_file:
+            audit_file.write(json.dumps(event, sort_keys=True) + "\n")
 
     @staticmethod
     def _sanitize_response(result: Dict[str, Any]) -> Optional[str]:
@@ -325,8 +391,6 @@ class MCPProxy:
                 return "Response contains SSH key material"
 
             # Env var values that shouldn't appear in responses
-            import os
-
             sensitive_env_keys = [
                 k
                 for k in os.environ

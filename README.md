@@ -32,8 +32,8 @@ Six switchable defense configurations (`proxy/proxy_base.py`) cover the ablation
 ├── policies/     Per-server JSON capability policies (defaults + overrides)
 ├── servers/      14 MCP servers: 11 Python (filesystem, notes, weather, shell, sqlite, git, env + malicious/trojan variants) + 3 JavaScript (servers/js/)
 ├── test_cases/   82 benchmark scenarios across 7 categories (file_read, exfiltration, env_leak, sandbox_escape, priv_escalation, cross_language, benign)
-├── notes_data/   155 synthetic notes JSON fixtures used by notes_server
-├── runner/       evaluate.py, aggregate.py, smoke_test.py
+├── notes_data/   170 valid synthetic notes JSON fixtures used by notes_server
+├── runner/       evaluate.py, aggregate.py, agentbound_check.py, ebpf_edge_tests.py, latency_benchmark.py, override_workflow.py, smoke_test.py
 └── EXECUTION_PLAN.md   Phase-by-phase reproduction instructions
 ```
 
@@ -52,29 +52,71 @@ Six switchable defense configurations (`proxy/proxy_base.py`) cover the ablation
 cd ebpf && make && cd ..
 
 # Smoke test (one server, a handful of cases)
-python3 -m runner.smoke_test
+python3 runner/smoke_test.py
 
 # Full benchmark for one configuration
-python3 -m runner.evaluate --config C-full --output results/C-full
+python3 runner/evaluate.py --config C-full --run-id trial
 
-# Aggregate across all configurations
-python3 -m runner.aggregate results/ > aggregate.json
+# Aggregate a reproduced run
+python3 runner/aggregate.py --run-id trial
+
+# Reproduce the steady-state latency table after installing eBPF
+sudo python3 runner/latency_benchmark.py --run-id codex_20260523_latency --iterations 100 --warmup 20
+
+# Reproduce the audit/override workflow
+python3 runner/override_workflow.py --run-id codex_20260523_override
+
+# Run focused eBPF edge tests after installing eBPF
+sudo python3 runner/ebpf_edge_tests.py --run-id codex_20260523_ebpf_edges
+
+# Run AgentBound-style baseline conformance checks
+python3 runner/agentbound_check.py --run-id codex_20260523_agentbound
 ```
+
+`C-ebpf`, `C-full`, and `C-AB+ebpf` now fail closed if the BPF LSM programs
+and pinned maps are unavailable. Run them only after installing the eBPF layer
+with root privileges.
 
 ## Headline Results
 
-Attack Prevention Rate (APR) and False Positive Rate (FPR) across the 14-server, 82-case benchmark:
+Attack Prevention Rate (APR), viable-attack APR (V-APR), and False Positive
+Rate (FPR) across the paper-pinned `codex_20260523_full` 14-server, 82-case
+benchmark:
 
-| Config        | APR    | FPR  |
-|---------------|--------|------|
-| C0            | 46.0%  | 0/19 |
-| C-AB          | 55.6%  | 0/19 |
-| C-app         | 52.4%  | 0/19 |
-| C-ebpf        | 63.5%  | 0/19 |
-| C-full        | 68.3%  | 0/19 |
-| C-AB + ebpf   | 69.8%  | 0/19 |
+| Config | APR | V-APR | Viable blocked | FPR |
+|--------|-----|-------|----------------|-----|
+| C0 | 21.3% | 0.0% | 0/48 | 0/21 |
+| C-AB | 37.7% | 20.8% | 10/48 | 0/21 |
+| C-app | 42.6% | 27.1% | 13/48 | 0/21 |
+| C-ebpf | 60.7% | 50.0% | 24/48 | 0/21 |
+| C-full | 68.9% | 60.4% | 29/48 | 0/21 |
+| C-AB+ebpf | 67.2% | 58.3% | 28/48 | 0/21 |
 
-eBPF marginal value: +15.9 pp (C-app → C-full), +14.2 pp (C-AB → C-AB+ebpf).
+APR includes attacks that fail intrinsically under C0. V-APR uses only attacks
+that succeed under C0 as the denominator, which is the more conservative
+measure of defense coverage.
+
+The repeated benign-call latency benchmark is stored in the internal paper
+workspace as `results/latency/codex_20260523_latency.md`. It measures `BN-01`
+(`filesystem_server.read_file`) with 20 warmup calls and 100 measured calls per
+configuration; C-full adds +0.488 ms median latency relative to C0 and remains
+at 1.141 ms p95 for this fixed benign call. The public CodeSync tree excludes
+`results/`, so external users regenerate this artifact with the command above.
+
+The audit/override workflow is stored internally as
+`results/audit/codex_20260523_override.md`. It demonstrates how a benign denial
+is recorded as a structured audit event and resolved by adding a scoped
+operator override under `policies/overrides`-compatible layout.
+
+Focused eBPF edge tests are stored internally as
+`results/ebpf_edges/codex_20260523_ebpf_edges.md`. They cover fail-closed map
+availability, workspace write allow behavior, directory-prefix boundary denial,
+`/tmp` staging denial, and localhost exfiltration denial.
+
+The AgentBound-style baseline check is stored internally as
+`results/agentbound/codex_20260523_agentbound.md`. It documents that `C-AB` is a
+per-server, application-level reproduction and verifies the expected
+argument-visible coverage and implementation-hidden blind spot.
 
 ## Threat Model
 

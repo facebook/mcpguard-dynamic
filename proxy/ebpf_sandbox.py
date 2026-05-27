@@ -6,12 +6,10 @@
 """
 MCPGuard Layer 3: eBPF Sandbox.
 
-Placeholder for eBPF-based OS-level enforcement. The actual BPF LSM programs
-are in ebpf/ and need to be compiled and loaded with root privileges.
-
-For smoke testing, provides a ProcessSandbox class that restricts the server
-subprocess using process-level controls (restricted env, cwd, etc.) as a
-fallback when eBPF is not available.
+Controller for the BPF LSM programs in experiments/ebpf. The proxy uses this
+class to install per-server policies into pinned BPF maps before forwarding a
+tool call. eBPF configurations fail closed when the kernel programs or maps are
+not available.
 """
 
 import ipaddress
@@ -21,6 +19,7 @@ import os
 import socket
 import struct
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set
 
@@ -73,13 +72,18 @@ def _run_bpftool(args: List[str]) -> bool:
     return True
 
 
-import tempfile
+def _require_bpftool(args: List[str], description: str) -> None:
+    """Run bpftool and fail closed if the policy update cannot be applied."""
+    if not _run_bpftool(args):
+        raise RuntimeError(f"Failed to apply eBPF policy update: {description}")
 
 
 def _run_bpftool_map_update_binary(
     map_path: str, key_bytes: bytes, value_bytes: bytes
 ) -> bool:
     """Write a map entry using temp binary files (avoids command-line length limits)."""
+    key_file = ""
+    val_file = ""
     try:
         with tempfile.NamedTemporaryFile(delete=False, prefix="bpf_key_") as kf:
             kf.write(key_bytes)
@@ -138,13 +142,17 @@ class EBPFSandbox:
 
     When eBPF programs are loaded (requires root and a compatible kernel),
     this class manages per-PID policies in BPF maps. When eBPF is not
-    available, falls back to ProcessSandbox for basic process-level isolation.
+    available, activation raises instead of falling back to weaker enforcement.
     """
 
     def __init__(self):
         self._active_policies: Dict[int, Dict[str, Any]] = {}
         self._ebpf_available = self._check_ebpf_available()
         self._process_sandboxes: Dict[int, "ProcessSandbox"] = {}
+
+    def is_available(self) -> bool:
+        """Return whether the required eBPF programs and maps are available."""
+        return self._ebpf_available
 
     def _check_ebpf_available(self) -> bool:
         """Check if eBPF LSM programs can be loaded."""
@@ -174,17 +182,18 @@ class EBPFSandbox:
         """
         Activate a sandbox policy for the given PID.
 
-        If eBPF is available, writes policy to BPF maps.
-        Otherwise, creates a ProcessSandbox as fallback.
+        If eBPF is available, writes policy to BPF maps. Otherwise raises so
+        the evaluation cannot silently report fallback behavior as eBPF.
         """
         self._active_policies[pid] = policy
 
-        if self._ebpf_available:
-            self._write_bpf_maps(pid, policy)
-        else:
-            sandbox = ProcessSandbox(pid=pid, policy=policy)
-            sandbox.activate()
-            self._process_sandboxes[pid] = sandbox
+        if not self._ebpf_available:
+            self._active_policies.pop(pid, None)
+            raise RuntimeError(
+                "eBPF programs/maps are unavailable; refusing fallback enforcement"
+            )
+
+        self._write_bpf_maps(pid, policy)
 
     def deactivate_policy(self, pid: int) -> None:
         """Remove sandbox policy for the given PID."""
@@ -227,15 +236,9 @@ class EBPFSandbox:
         pid_value = ["value"] + _int_to_le_hex(policy_id, 4) + _int_to_le_hex(0, 4)
 
         # Update the shared pid_policy_map (one map for all four programs)
-        _run_bpftool(
-            [
-                "map",
-                "update",
-                "pinned",
-                SHARED_PID_MAP,
-            ]
-            + pid_key
-            + pid_value
+        _require_bpftool(
+            ["map", "update", "pinned", SHARED_PID_MAP] + pid_key + pid_value,
+            "pid_policy_map",
         )
 
         # Parse and write file policy
@@ -270,43 +273,56 @@ class EBPFSandbox:
             if write:
                 path_perms[prefix]["allow_write"] = 1
 
+        def _dir_prefix(prefix: str) -> str:
+            return prefix if prefix.endswith("/") else prefix + "/"
+
         experiments_dir = str(Path(__file__).resolve().parent.parent)
 
         # Collect per-tool filesystem permissions
         for tool_policy in tools.values():
             fs = tool_policy.get("filesystem", {})
             for path in fs.get("read", []):
+                is_dir_glob = path.endswith("/**") or path.endswith("/*")
                 prefix = path.replace("/**", "").replace("/*", "")
-                _add_path(prefix, read=True, write=False)
+                stored_prefix = _dir_prefix(prefix) if is_dir_glob else prefix
+                _add_path(stored_prefix, read=True, write=False)
                 # Resolve relative paths against experiments root
                 if prefix.startswith("./"):
                     resolved = str((Path(experiments_dir) / prefix[2:]).resolve())
+                    if is_dir_glob:
+                        resolved = _dir_prefix(resolved)
                     _add_path(resolved, read=True, write=False)
             for path in fs.get("write", []):
+                is_dir_glob = path.endswith("/**") or path.endswith("/*")
                 prefix = path.replace("/**", "").replace("/*", "")
-                _add_path(prefix, read=False, write=True)
+                stored_prefix = _dir_prefix(prefix) if is_dir_glob else prefix
+                _add_path(stored_prefix, read=False, write=True)
                 if prefix.startswith("./"):
                     resolved = str((Path(experiments_dir) / prefix[2:]).resolve())
+                    if is_dir_glob:
+                        resolved = _dir_prefix(resolved)
                     _add_path(resolved, read=False, write=True)
 
         # Always allow basic system paths (read-only) so the process can
         # function.  NOTE: Do NOT include /proc/self (leaks environ) or
         # /tmp (used by attack payloads for exfiltration staging files).
         system_paths = [
-            "/lib",
-            "/usr/lib",
-            "/usr/local/lib",
-            "/usr/local/bin",
-            "/usr/bin",
-            "/usr/sbin",
-            "/bin",
+            "/lib/",
+            "/lib64/",
+            "/usr/lib/",
+            "/usr/lib64/",
+            "/usr/local/lib/",
+            "/usr/local/bin/",
+            "/usr/bin/",
+            "/usr/sbin/",
+            "/bin/",
             "/dev/null",
             "/dev/urandom",
-            "/dev/pts",
+            "/dev/pts/",
             "/etc/ld.so",
             "/etc/localtime",
-            "/usr/local/fbcode",
-            "/usr/share",
+            "/usr/local/fbcode/",
+            "/usr/share/",
         ]
 
         for sp in system_paths:
@@ -314,7 +330,7 @@ class EBPFSandbox:
 
         # Allow the experiments directory itself (read-only) so Python
         # can load server modules at runtime.
-        _add_path(experiments_dir, read=True, write=False)
+        _add_path(_dir_prefix(experiments_dir), read=True, write=False)
 
         allowed_paths = list(path_perms.keys())
         rule_count = min(len(allowed_paths), MAX_PATH_RULES)
@@ -347,7 +363,7 @@ class EBPFSandbox:
 
         hex_value = [f"0x{b:02x}" for b in value_bytes]
 
-        _run_bpftool(
+        _require_bpftool(
             [
                 "map",
                 "update",
@@ -357,7 +373,8 @@ class EBPFSandbox:
             + ["key"]
             + _int_to_le_hex(policy_id, 4)
             + ["value", "hex"]
-            + hex_value
+            + hex_value,
+            "file_policy_map",
         )
 
     def _write_net_policy(self, policy_id: int, policy: Dict[str, Any]) -> None:
@@ -406,7 +423,7 @@ class EBPFSandbox:
 
         hex_value = [f"0x{b:02x}" for b in value_bytes]
 
-        _run_bpftool(
+        _require_bpftool(
             [
                 "map",
                 "update",
@@ -416,7 +433,8 @@ class EBPFSandbox:
             + ["key"]
             + _int_to_le_hex(policy_id, 4)
             + ["value", "hex"]
-            + hex_value
+            + hex_value,
+            "net_policy_map",
         )
 
     def _parse_net_dest(self, dest: str) -> Optional[Dict[str, Any]]:
@@ -489,7 +507,7 @@ class EBPFSandbox:
 
         hex_value = [f"0x{b:02x}" for b in value_bytes]
 
-        _run_bpftool(
+        _require_bpftool(
             [
                 "map",
                 "update",
@@ -499,7 +517,8 @@ class EBPFSandbox:
             + ["key"]
             + _int_to_le_hex(policy_id, 4)
             + ["value", "hex"]
-            + hex_value
+            + hex_value,
+            "exec_policy_map",
         )
 
     def _clear_bpf_maps(self, pid: int) -> None:
@@ -631,8 +650,10 @@ class EBPFSandbox:
 
 class ProcessSandbox:
     """
-    Fallback sandbox that uses process-level restrictions when eBPF
-    is not available.
+    Legacy process-level sandbox retained for direct smoke tests.
+
+    The evaluation proxy no longer uses this as a substitute for eBPF
+    configurations, because that would report weaker fallback behavior as L3.
 
     Provides basic isolation by:
       - Restricting environment variables

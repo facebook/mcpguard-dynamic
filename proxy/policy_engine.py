@@ -13,8 +13,10 @@ access control. For a given tool call, checks:
 Returns ALLOW/DENY with reason.
 """
 
-import fnmatch
 import json
+import sys
+from copy import deepcopy
+from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -29,8 +31,10 @@ class PolicyEngine:
 
     def __init__(self, policy_dir: str):
         self.policy_dir = Path(policy_dir)
+        self.override_dir = self.policy_dir.parent / "overrides"
         self._policies: Dict[str, Dict[str, Any]] = {}
         self._load_policies()
+        self._load_overrides()
 
     def _load_policies(self) -> None:
         """Load all policy JSON files from the policy directory."""
@@ -44,8 +48,92 @@ class PolicyEngine:
             except (json.JSONDecodeError, KeyError) as exc:
                 print(
                     f"Warning: Failed to load policy {policy_file}: {exc}",
-                    file=__import__("sys").stderr,
+                    file=sys.stderr,
                 )
+
+    def _load_overrides(self) -> None:
+        """Merge operator override JSON files into the loaded policies."""
+        if not self.override_dir.exists():
+            return
+
+        for override_file in sorted(self.override_dir.glob("*.json")):
+            self._load_server_override(override_file)
+
+        for server_dir in sorted(self.override_dir.iterdir()):
+            if not server_dir.is_dir():
+                continue
+            for override_file in sorted(server_dir.glob("*.json")):
+                self._load_tool_override(server_dir.name, override_file)
+
+    def _load_server_override(self, override_file: Path) -> None:
+        try:
+            data = json.loads(override_file.read_text(encoding="utf-8"))
+            server_name = data.get("server", override_file.stem)
+            base = self._policies.setdefault(
+                server_name,
+                {"server": server_name, "tools": {}},
+            )
+            self._policies[server_name] = self._merge_policy(base, data)
+        except (json.JSONDecodeError, KeyError) as exc:
+            print(
+                f"Warning: Failed to load override {override_file}: {exc}",
+                file=sys.stderr,
+            )
+
+    def _load_tool_override(self, server_name: str, override_file: Path) -> None:
+        try:
+            data = json.loads(override_file.read_text(encoding="utf-8"))
+            tool_name = data.get("tool", override_file.stem)
+            patch = data.get("capabilities", data)
+            patch = {
+                key: value
+                for key, value in patch.items()
+                if key not in ("server", "tool", "description")
+            }
+            server_policy = self._policies.setdefault(
+                server_name,
+                {"server": server_name, "tools": {}},
+            )
+            tools = server_policy.setdefault("tools", {})
+            existing = tools.setdefault(tool_name, {})
+            tools[tool_name] = self._merge_policy(existing, patch)
+        except (json.JSONDecodeError, KeyError) as exc:
+            print(
+                f"Warning: Failed to load override {override_file}: {exc}",
+                file=sys.stderr,
+            )
+
+    def _merge_policy(
+        self, base: Dict[str, Any], patch: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Recursively merge policy overrides, unioning list values."""
+        merged = deepcopy(base)
+        for key, value in patch.items():
+            if key == "server":
+                merged[key] = value
+            elif (
+                key in merged
+                and isinstance(merged[key], dict)
+                and isinstance(value, dict)
+            ):
+                merged[key] = self._merge_policy(merged[key], value)
+            elif (
+                key in merged
+                and isinstance(merged[key], list)
+                and isinstance(value, list)
+            ):
+                merged[key] = self._merge_lists(merged[key], value)
+            else:
+                merged[key] = deepcopy(value)
+        return merged
+
+    @staticmethod
+    def _merge_lists(base: List[Any], patch: List[Any]) -> List[Any]:
+        merged = list(base)
+        for item in patch:
+            if item not in merged:
+                merged.append(item)
+        return merged
 
     def get_server_policy(self, server_name: str) -> Dict[str, Any]:
         """Get the full policy dict for a server."""
@@ -169,7 +257,7 @@ class PolicyEngine:
 
         for pattern in patterns:
             norm_pattern = pattern.replace("\\", "/")
-            if fnmatch.fnmatch(norm_path, norm_pattern):
+            if fnmatch(norm_path, norm_pattern):
                 return True
             # Also check if the path is under the pattern directory
             if norm_pattern.endswith("/**"):
@@ -184,11 +272,11 @@ class PolicyEngine:
                 # Check if prepending the prefix makes it match.
                 if not norm_path.startswith("/") and not norm_path.startswith(".."):
                     prefixed = prefix.rstrip("/") + "/" + norm_path
-                    if fnmatch.fnmatch(prefixed, norm_pattern):
+                    if fnmatch(prefixed, norm_pattern):
                         return True
                     # Also match the raw relative path against the glob
                     # portion of the pattern
-                    if fnmatch.fnmatch(norm_path, "**"):
+                    if fnmatch(norm_path, "**"):
                         return True
 
         return False

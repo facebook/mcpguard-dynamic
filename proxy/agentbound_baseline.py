@@ -19,8 +19,9 @@ Key differences from MCPGuard:
 import fnmatch
 import json
 import os
+import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 from urllib.parse import urlparse
 
 
@@ -50,7 +51,7 @@ class AgentBoundBaseline:
             except (json.JSONDecodeError, KeyError) as exc:
                 print(
                     f"Warning: Failed to load AgentBound manifest {manifest_file}: {exc}",
-                    file=__import__("sys").stderr,
+                    file=sys.stderr,
                 )
 
     def check(  # noqa: C901
@@ -77,8 +78,9 @@ class AgentBoundBaseline:
 
         # Check filesystem access (server-level)
         fs_policy = policy.get("filesystem", {})
-        allowed_read = fs_policy.get("read", [])  # noqa: F841  reserved for future read-policy enforcement
-        allowed_write = fs_policy.get("write", [])  # noqa: F841  reserved for future write-policy enforcement
+        allowed_read = fs_policy.get("read", [])
+        allowed_write = fs_policy.get("write", [])
+        all_allowed_paths = allowed_read + allowed_write
 
         for arg_name, arg_value in arguments.items():
             if not isinstance(arg_value, str):
@@ -99,6 +101,14 @@ class AgentBoundBaseline:
                         "action": "DENY",
                         "reason": (
                             f"AgentBound: path traversal in '{arg_value}' "
+                            f"for server '{server_name}'"
+                        ),
+                    }
+                if not self._path_matches_patterns(arg_value, all_allowed_paths):
+                    return {
+                        "action": "DENY",
+                        "reason": (
+                            f"AgentBound: path '{arg_value}' not allowed "
                             f"for server '{server_name}'"
                         ),
                     }
@@ -156,3 +166,25 @@ class AgentBoundBaseline:
                         }
 
         return {"action": "ALLOW", "reason": "AgentBound check passed"}
+
+    def _path_matches_patterns(self, path: str, patterns: List[str]) -> bool:
+        """Check a relative path argument against server-level manifest globs."""
+        if not patterns:
+            return False
+
+        norm_path = path.replace("\\", "/")
+        for pattern in patterns:
+            norm_pattern = pattern.replace("\\", "/")
+            if fnmatch.fnmatch(norm_path, norm_pattern):
+                return True
+            if norm_pattern.endswith("/**"):
+                prefix = norm_pattern[:-3].rstrip("/")
+                if norm_path.startswith(prefix + "/"):
+                    return True
+                if not norm_path.startswith("/") and not norm_path.startswith(".."):
+                    prefixed = prefix + "/" + norm_path
+                    if fnmatch.fnmatch(prefixed, norm_pattern):
+                        return True
+                    if prefix in (".", "./workspace"):
+                        return True
+        return False

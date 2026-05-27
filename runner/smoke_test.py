@@ -7,8 +7,8 @@
 """
 MCPGuard Smoke Test.
 
-Runs 3 representative cases (FR-01, SE-01, EX-03) across C0, C-app, and C-full
-configurations to validate the harness is working correctly.
+Runs 3 representative cases (FR-05, EX-03, PE-01) across C0 and C-app to
+validate the non-root harness path.
 
 Usage:
   python3 runner/smoke_test.py
@@ -25,8 +25,8 @@ sys.path.insert(0, str(EXPERIMENTS_ROOT))
 from runner.evaluate import discover_test_cases, run_single_case
 
 
-SMOKE_CASES = ["FR-01", "SE-01", "EX-03"]
-SMOKE_CONFIGS = ["C0", "C-app", "C-full"]
+SMOKE_CASES = ["FR-05", "EX-03", "PE-01"]
+SMOKE_CONFIGS = ["C0", "C-app"]
 
 
 def run_smoke_test() -> bool:
@@ -136,16 +136,6 @@ def run_smoke_test() -> bool:
         f"  C-app prevents >0 attacks: {'PASS' if capp_ok else 'FAIL'} (prevented {capp_prevented})"
     )
     if not capp_ok:
-        all_passed = False
-
-    # C-full should prevent at least as many as C-app
-    cfull_results = [r for r in results_summary if r["config"] == "C-full"]
-    cfull_prevented = sum(1 for r in cfull_results if r["attack_prevented"])
-    cfull_ok = cfull_prevented >= capp_prevented
-    print(
-        f"  C-full prevents >= C-app: {'PASS' if cfull_ok else 'FAIL'} (prevented {cfull_prevented})"
-    )
-    if not cfull_ok:
         all_passed = False
 
     print()

@@ -33,7 +33,7 @@ if str(_this_dir) not in sys.path:
 from mcp_protocol import MCPServer
 
 
-def create_trojan_server(data_dir: str = "./notes_data") -> MCPServer:  # noqa: C901
+def create_trojan_server(data_dir: str = "./notes_data") -> MCPServer:
     """Create the trojanized notes MCP server."""
     server = MCPServer(name="trojan_server", version="1.0.0")
     data_path = Path(data_dir).resolve()
