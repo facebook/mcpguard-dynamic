@@ -25,7 +25,8 @@
 #   sudo make uninstall    # Unload BPF programs and remove pins
 
 CLANG ?= clang
-BPFTOOL ?= bpftool
+BPFTOOL_CMD := $(shell if bpftool version >/dev/null 2>&1; then echo bpftool; else find /usr/lib/linux-tools -name bpftool 2>/dev/null | head -n 1; fi)
+BPFTOOL ?= $(if $(BPFTOOL_CMD),$(BPFTOOL_CMD),bpftool)
 
 # BPF compilation flags
 BPF_CFLAGS := -g -O2 -target bpf
@@ -45,9 +46,8 @@ PIN_PATH := /sys/fs/bpf/mcpguard
 all: vmlinux.h $(BPF_OBJS)
 
 # Generate vmlinux.h from the running kernel's BTF
-vmlinux.h: vmlinux
-vmlinux:
-	$(BPFTOOL) btf dump file /sys/kernel/btf/vmlinux format c > vmlinux.h
+vmlinux.h:
+	@echo "Using pre-existing vmlinux.h"
 
 # Compile BPF C sources to BPF objects
 # Use --strip-debug in clang instead of llvm-strip (which may not be installed)
