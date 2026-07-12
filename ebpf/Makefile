@@ -45,9 +45,17 @@ PIN_PATH := /sys/fs/bpf/mcpguard
 
 all: vmlinux.h $(BPF_OBJS)
 
-# Generate vmlinux.h from the running kernel's BTF
+# Generate vmlinux.h from the running kernel's BTF, unless one is
+# already checked out (some RC/custom kernels produce a broken dump).
 vmlinux.h:
-	@echo "Using pre-existing vmlinux.h"
+	@if [ -s vmlinux.h ]; then \
+		echo "Using pre-existing vmlinux.h"; \
+	else \
+		$(BPFTOOL) btf dump file /sys/kernel/btf/vmlinux format c > vmlinux.h; \
+	fi
+
+vmlinux:
+	$(BPFTOOL) btf dump file /sys/kernel/btf/vmlinux format c > vmlinux.h
 
 # Compile BPF C sources to BPF objects
 # Use --strip-debug in clang instead of llvm-strip (which may not be installed)
