@@ -1,0 +1,129 @@
+{
+  "server": "filesystem_server",
+  "tools": {
+    "read_file": {
+      "filesystem": {
+        "read": [
+          "./workspace/**"
+        ],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat",
+          "getdents"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    },
+    "write_file": {
+      "filesystem": {
+        "read": [
+          "./workspace/**"
+        ],
+        "write": [
+          "./workspace/**"
+        ]
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat",
+          "getdents",
+          "write",
+          "mkdir"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    },
+    "list_dir": {
+      "filesystem": {
+        "read": [
+          "./workspace/**"
+        ],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat",
+          "getdents"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    }
+  }
+}

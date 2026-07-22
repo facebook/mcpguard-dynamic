@@ -12,6 +12,7 @@ tool call. eBPF configurations fail closed when the kernel programs or maps are
 not available.
 """
 
+import ctypes
 import ipaddress
 import json
 import logging
@@ -134,6 +135,82 @@ def _run_bpftool_map_update_binary(
                 os.unlink(f)
             except OSError:
                 pass
+
+
+# --- Direct bpf() syscall map update -------------------------------------
+# bpftool's CLI parses each hex byte as a separate argv token, so a ~8 KB
+# file_policy value (or ~4 KB exec_policy) overflows ARG_MAX / bpftool's token
+# limit and the update silently fails. We update those maps via the bpf()
+# syscall directly, passing the value as one contiguous buffer.
+_NR_BPF = 321  # x86_64
+_BPF_MAP_UPDATE_ELEM = 2
+_BPF_OBJ_GET = 7
+_BPF_ANY = 0
+_libc = ctypes.CDLL(None, use_errno=True)
+_libc.syscall.restype = ctypes.c_long
+
+
+def _bpf_syscall(cmd: int, attr: "ctypes.Array") -> int:
+    ctypes.set_errno(0)
+    return _libc.syscall(
+        ctypes.c_long(_NR_BPF),
+        ctypes.c_long(cmd),
+        ctypes.cast(attr, ctypes.c_void_p),
+        ctypes.c_uint(len(attr)),
+    )
+
+
+def _bpf_obj_get(path: str) -> int:
+    path_buf = ctypes.create_string_buffer(path.encode() + b"\x00")
+    attr = (ctypes.c_uint8 * 16)()
+    struct.pack_into("<QII", attr, 0, ctypes.addressof(path_buf), 0, 0)
+    fd = _bpf_syscall(_BPF_OBJ_GET, attr)
+    if fd < 0:
+        raise OSError(ctypes.get_errno(), f"BPF_OBJ_GET failed for {path}")
+    return fd
+
+
+def _bpf_map_update_direct(map_path: str, key_bytes: bytes, value_bytes: bytes) -> bool:
+    """Update a pinned BPF map via bpf() directly (no argv/token limits)."""
+    try:
+        fd = _bpf_obj_get(map_path)
+    except OSError as exc:
+        logger.warning("BPF_OBJ_GET failed for %s: %s", map_path, exc)
+        return False
+    try:
+        key_buf = ctypes.create_string_buffer(key_bytes, len(key_bytes))
+        val_buf = ctypes.create_string_buffer(value_bytes, len(value_bytes))
+        attr = (ctypes.c_uint8 * 32)()
+        struct.pack_into(
+            "<IIQQQ",
+            attr,
+            0,
+            fd,
+            0,
+            ctypes.addressof(key_buf),
+            ctypes.addressof(val_buf),
+            _BPF_ANY,
+        )
+        if _bpf_syscall(_BPF_MAP_UPDATE_ELEM, attr) != 0:
+            logger.warning(
+                "BPF_MAP_UPDATE_ELEM failed for %s: errno=%d",
+                map_path,
+                ctypes.get_errno(),
+            )
+            return False
+        return True
+    finally:
+        os.close(fd)
+
+
+def _require_map_update(
+    map_path: str, key_bytes: bytes, value_bytes: bytes, desc: str
+) -> None:
+    """Fail closed if a policy map cannot be updated."""
+    if not _bpf_map_update_direct(map_path, key_bytes, value_bytes):
+        raise RuntimeError(
+            f"Failed to update {desc} via bpf() syscall; refusing weakened policy"
+        )
 
 
 class EBPFSandbox:
@@ -361,19 +438,10 @@ class EBPFSandbox:
 
         value_bytes.extend(struct.pack("<I", rule_count))
 
-        hex_value = [f"0x{b:02x}" for b in value_bytes]
-
-        _require_bpftool(
-            [
-                "map",
-                "update",
-                "pinned",
-                f"{FILE_MAP_DIR}/file_policy_map",
-            ]
-            + ["key"]
-            + _int_to_le_hex(policy_id, 4)
-            + ["value", "hex"]
-            + hex_value,
+        _require_map_update(
+            f"{FILE_MAP_DIR}/file_policy_map",
+            struct.pack("<I", policy_id),
+            bytes(value_bytes),
             "file_policy_map",
         )
 
@@ -421,19 +489,10 @@ class EBPFSandbox:
 
         value_bytes.extend(struct.pack("<I", rule_count))
 
-        hex_value = [f"0x{b:02x}" for b in value_bytes]
-
-        _require_bpftool(
-            [
-                "map",
-                "update",
-                "pinned",
-                f"{NET_MAP_DIR}/net_policy_map",
-            ]
-            + ["key"]
-            + _int_to_le_hex(policy_id, 4)
-            + ["value", "hex"]
-            + hex_value,
+        _require_map_update(
+            f"{NET_MAP_DIR}/net_policy_map",
+            struct.pack("<I", policy_id),
+            bytes(value_bytes),
             "net_policy_map",
         )
 
@@ -505,19 +564,10 @@ class EBPFSandbox:
 
         value_bytes.extend(struct.pack("<I", rule_count))
 
-        hex_value = [f"0x{b:02x}" for b in value_bytes]
-
-        _require_bpftool(
-            [
-                "map",
-                "update",
-                "pinned",
-                f"{PROC_MAP_DIR}/exec_policy_map",
-            ]
-            + ["key"]
-            + _int_to_le_hex(policy_id, 4)
-            + ["value", "hex"]
-            + hex_value,
+        _require_map_update(
+            f"{PROC_MAP_DIR}/exec_policy_map",
+            struct.pack("<I", policy_id),
+            bytes(value_bytes),
             "exec_policy_map",
         )
 

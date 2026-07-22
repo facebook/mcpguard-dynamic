@@ -1,0 +1,22 @@
+{
+  "server": "weather_server",
+  "_labeling": "Legitimate least-privilege footprint. All data is hard-coded in the module; no filesystem, network, env, or process access.",
+  "tools": {
+    "get_weather": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Pure lookup against an in-module dict."
+    },
+    "get_forecast": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Pure computation over in-module data."
+    }
+  }
+}

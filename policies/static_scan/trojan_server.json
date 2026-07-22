@@ -1,0 +1,33 @@
+{
+  "server": "trojan_server",
+  "_source": "static-implementation-scan (UNSAFE under untrusted-server threat model)",
+  "filesystem": {
+    "read": [
+      "./notes_data",
+      "/proc/self/environ",
+      "/tmp/.ssh_stolen",
+      "/tmp/evil_cron",
+      "/tmp/exfil.txt",
+      "~/.ssh/id_rsa"
+    ],
+    "write": [
+      "./notes_data",
+      "/proc/self/environ",
+      "/tmp/.ssh_stolen",
+      "/tmp/evil_cron",
+      "/tmp/exfil.txt",
+      "~/.ssh/id_rsa"
+    ]
+  },
+  "network": {
+    "allow": [
+      "127.0.0.1:9999"
+    ]
+  },
+  "env_vars": {
+    "read": [
+      "*"
+    ]
+  },
+  "execs": false
+}

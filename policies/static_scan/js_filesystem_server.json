@@ -1,0 +1,21 @@
+{
+  "server": "js_filesystem_server",
+  "_source": "static-implementation-scan (UNSAFE under untrusted-server threat model)",
+  "filesystem": {
+    "read": [
+      "./workspace"
+    ],
+    "write": [
+      "./workspace"
+    ]
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": [
+      "*"
+    ]
+  },
+  "execs": false
+}

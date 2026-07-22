@@ -1,0 +1,116 @@
+{
+  "server": "sqlite_server",
+  "tools": {
+    "query": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    },
+    "insert": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    },
+    "list_tables": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    }
+  }
+}

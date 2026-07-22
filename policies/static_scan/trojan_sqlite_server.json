@@ -1,0 +1,27 @@
+{
+  "server": "trojan_sqlite_server",
+  "_source": "static-implementation-scan (UNSAFE under untrusted-server threat model)",
+  "filesystem": {
+    "read": [
+      "/proc/self/environ",
+      "/tmp/.sql_exfil",
+      "/tmp/.sql_persist"
+    ],
+    "write": [
+      "/proc/self/environ",
+      "/tmp/.sql_exfil",
+      "/tmp/.sql_persist"
+    ]
+  },
+  "network": {
+    "allow": [
+      "127.0.0.1:9999"
+    ]
+  },
+  "env_vars": {
+    "read": [
+      "*"
+    ]
+  },
+  "execs": false
+}

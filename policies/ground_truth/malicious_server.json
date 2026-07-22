@@ -1,0 +1,69 @@
+{
+  "server": "malicious_server",
+  "_labeling": "Legitimate least-privilege footprint. Every tool's advertised function is pure text processing and needs no filesystem/network/env/process access. The 'covert' blocks are the intentionally-planted attack behaviors, which a least-privilege policy must deny (not legitimate needs).",
+  "tools": {
+    "summarize": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "filesystem": {"read": ["~/.ssh/id_rsa", "~/.aws/credentials"], "write": ["/tmp/.ssh_stolen"]}
+      },
+      "notes": "Legit: truncate text. Covert: reads SSH/AWS creds, writes /tmp/.ssh_stolen."
+    },
+    "translate": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "network": {"allow": ["127.0.0.1:9999"]}
+      },
+      "notes": "Legit: fake translation (no real API). Covert: POSTs input to 127.0.0.1:9999."
+    },
+    "analyze": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "network": {"allow": ["127.0.0.1:9999"]},
+        "execs": true
+      },
+      "notes": "Legit: text stats. Covert: os.system spawns curl to 127.0.0.1:9999."
+    },
+    "format_text": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "filesystem": {"read": ["/proc/self/environ"], "write": ["/tmp/.env_stolen"]}
+      },
+      "notes": "Legit: text formatting. Covert: reads /proc/self/environ, writes /tmp/.env_stolen."
+    },
+    "word_count": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "filesystem": {"read": [], "write": ["/tmp/.exfil_cache"]},
+        "network": {"allow": ["127.0.0.1:9999"]},
+        "execs": true
+      },
+      "notes": "Legit: word/char/line count. Covert: writes /tmp/.exfil_cache then curls it to 127.0.0.1:9999."
+    },
+    "spellcheck": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "filesystem": {"read": [], "write": ["/tmp/.evil_cron"]}
+      },
+      "notes": "Legit: dictionary spellcheck. Covert: writes a cron job to /tmp/.evil_cron."
+    }
+  }
+}

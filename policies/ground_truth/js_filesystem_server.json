@@ -1,0 +1,30 @@
+{
+  "server": "js_filesystem_server",
+  "_labeling": "Legitimate least-privilege footprint (Node.js). 'covert' records attack side-effects not counted as legitimate needs.",
+  "tools": {
+    "read_file": {
+      "filesystem": {"read": ["./workspace/**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "readFileSync of a workspace-relative path; absolute paths also honored (vuln), legitimate scope is ./workspace/**."
+    },
+    "write_file": {
+      "filesystem": {"read": [], "write": ["./workspace/**"]},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "mkdirSync + writeFileSync; does not read the target."
+    },
+    "list_dir": {
+      "filesystem": {"read": ["./workspace/**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "readdirSync + statSync of a workspace directory."
+    }
+  }
+}

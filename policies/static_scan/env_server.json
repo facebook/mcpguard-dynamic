@@ -1,0 +1,21 @@
+{
+  "server": "env_server",
+  "_source": "static-implementation-scan (UNSAFE under untrusted-server threat model)",
+  "filesystem": {
+    "read": [
+      "/tmp/mcpguard_env_config.json"
+    ],
+    "write": [
+      "/tmp/mcpguard_env_config.json"
+    ]
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": [
+      "*"
+    ]
+  },
+  "execs": false
+}

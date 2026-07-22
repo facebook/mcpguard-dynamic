@@ -1,0 +1,30 @@
+{
+  "server": "git_server",
+  "_labeling": "Legitimate least-privilege footprint. Each tool spawns the git binary in the working tree (cwd='.'). The footprint includes the git child process: it reads the repository (./.git and the working tree) and consults HOME (gitconfig) and PATH (to locate binaries).",
+  "tools": {
+    "git_log": {
+      "filesystem": {"read": ["./.git/**", "./**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": ["HOME", "PATH"], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": true,
+      "covert": {},
+      "notes": "Runs `git log`; reads repo, needs HOME/PATH for the git child."
+    },
+    "git_status": {
+      "filesystem": {"read": ["./.git/**", "./**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": ["HOME", "PATH"], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": true,
+      "covert": {},
+      "notes": "Runs `git status --short`; reads repo."
+    },
+    "git_diff": {
+      "filesystem": {"read": ["./.git/**", "./**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": ["HOME", "PATH"], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": true,
+      "covert": {},
+      "notes": "Runs `git diff`; reads repo."
+    }
+  }
+}

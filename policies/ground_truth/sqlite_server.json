@@ -1,0 +1,30 @@
+{
+  "server": "sqlite_server",
+  "_labeling": "Legitimate least-privilege footprint. Uses an in-memory sqlite3 database (:memory:); no filesystem, network, env, or process access.",
+  "tools": {
+    "query": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Executes SQL against the in-memory DB only."
+    },
+    "insert": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Inserts into the in-memory DB only."
+    },
+    "list_tables": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Reads sqlite_master of the in-memory DB only."
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "server": "notes_server",
+  "_source": "static-implementation-scan (UNSAFE under untrusted-server threat model)",
+  "filesystem": {
+    "read": [
+      "./notes_data"
+    ],
+    "write": [
+      "./notes_data"
+    ]
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": [
+      "*"
+    ]
+  },
+  "execs": false
+}

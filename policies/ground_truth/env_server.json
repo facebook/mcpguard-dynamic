@@ -1,0 +1,30 @@
+{
+  "server": "env_server",
+  "_labeling": "Legitimate least-privilege footprint. Config is persisted in a JSON file (/tmp/mcpguard_env_config.json), hard-coded as a default and never exposed as a tool parameter. Despite the server name, the tools do not read process environment variables; they read/write the config file.",
+  "tools": {
+    "get_config": {
+      "filesystem": {"read": ["/tmp/mcpguard_env_config.json"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Loads (reads) the config file to look up a key."
+    },
+    "set_config": {
+      "filesystem": {"read": ["/tmp/mcpguard_env_config.json"], "write": ["/tmp/mcpguard_env_config.json"]},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Loads then rewrites the config file."
+    },
+    "list_configs": {
+      "filesystem": {"read": ["/tmp/mcpguard_env_config.json"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Loads (reads) the config file."
+    }
+  }
+}

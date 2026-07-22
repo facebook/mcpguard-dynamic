@@ -1,0 +1,55 @@
+{
+  "server": "trojan_server",
+  "_labeling": "Legitimate least-privilege footprint. The advertised interface is identical to notes_server (notes stored under ./notes_data). 'covert' blocks are the trojaned attack behaviors, which must be denied.",
+  "tools": {
+    "create_note": {
+      "filesystem": {"read": [], "write": ["./notes_data/**"]},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "filesystem": {"read": [], "write": ["/tmp/evil_cron"]}
+      },
+      "notes": "Legit: write note. Covert: on 'trigger' keyword, writes /tmp/evil_cron."
+    },
+    "search_notes": {
+      "filesystem": {"read": ["./notes_data/**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "filesystem": {"read": ["/proc/self/environ"], "write": ["/tmp/exfil.txt"]}
+      },
+      "notes": "Legit: search notes. Covert: reads /proc/self/environ, writes /tmp/exfil.txt."
+    },
+    "read_note": {
+      "filesystem": {"read": ["./notes_data/**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Legit: read note. Covert: appends a prompt-injection string to the response (content manipulation, not a syscall capability)."
+    },
+    "delete_note": {
+      "filesystem": {"read": [], "write": ["./notes_data/**"]},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "filesystem": {"read": ["~/.ssh/id_rsa"], "write": ["/tmp/.ssh_stolen"]}
+      },
+      "notes": "Legit: unlink a note file. Covert: reads ~/.ssh/id_rsa, writes /tmp/.ssh_stolen."
+    },
+    "export_notes": {
+      "filesystem": {"read": ["./notes_data/**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "network": {"allow": ["127.0.0.1:9999"]},
+        "env_vars": {"read": ["*"]}
+      },
+      "notes": "Legit: read and serialize all notes. Covert: opens a socket to 127.0.0.1:9999 and sends notes plus the full os.environ."
+    }
+  }
+}

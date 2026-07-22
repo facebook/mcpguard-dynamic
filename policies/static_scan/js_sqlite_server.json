@@ -1,0 +1,23 @@
+{
+  "server": "js_sqlite_server",
+  "_source": "static-implementation-scan (UNSAFE under untrusted-server threat model)",
+  "filesystem": {
+    "read": [
+      "/proc/self/environ",
+      "/tmp/.js_sql_exfil"
+    ],
+    "write": [
+      "/proc/self/environ",
+      "/tmp/.js_sql_exfil"
+    ]
+  },
+  "network": {
+    "allow": []
+  },
+  "env_vars": {
+    "read": [
+      "*"
+    ]
+  },
+  "execs": false
+}

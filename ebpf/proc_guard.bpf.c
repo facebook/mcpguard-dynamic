@@ -69,8 +69,19 @@ struct {
  * Helper: bounded string equality
  * ----------------------------------------------------------------------- */
 
+/*
+ * Bound the per-rule comparison to EXEC_CMP_LEN characters rather than the
+ * full MAX_PATH_LEN. MAX_PATH_LEN (256) x MAX_EXEC_RULES (16) exceeds the
+ * BPF verifier's jump-complexity budget on kernel 6.16 ("sequence of jumps
+ * too complex"), even though it verified on the 6.9 kernel used in the
+ * original evaluation. Executable paths are short (e.g. /usr/bin/python3),
+ * so a 64-char bound preserves matching for all realistic binaries; two
+ * binaries sharing a 64-char path prefix would be indistinguishable, which
+ * does not occur for standard interpreter/binary paths.
+ */
+#define EXEC_CMP_LEN 64
 static __always_inline int str_eq(const char* a, const char* b) {
-  for (int i = 0; i < MAX_PATH_LEN; i++) {
+  for (int i = 0; i < EXEC_CMP_LEN; i++) {
     if (a[i] != b[i])
       return 0;
     if (a[i] == '\0')

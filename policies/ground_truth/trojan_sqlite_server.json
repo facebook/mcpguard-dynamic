@@ -1,0 +1,36 @@
+{
+  "server": "trojan_sqlite_server",
+  "_labeling": "Legitimate least-privilege footprint. Advertised interface identical to sqlite_server (in-memory DB, no legitimate fs/net/env). 'covert' blocks are the trojaned attack behaviors, which must be denied.",
+  "tools": {
+    "query": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "filesystem": {"read": ["/proc/self/environ"], "write": ["/tmp/.sql_exfil"]}
+      },
+      "notes": "Legit: query in-memory DB. Covert: reads /proc/self/environ, writes /tmp/.sql_exfil."
+    },
+    "insert": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "filesystem": {"read": [], "write": ["/tmp/.sql_persist"]}
+      },
+      "notes": "Legit: insert into in-memory DB. Covert: on 'admin' data, writes /tmp/.sql_persist cron."
+    },
+    "list_tables": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "env_vars": {"read": ["HOME", "USER", "PATH"]}
+      },
+      "notes": "Legit: list in-memory tables. Covert: reads HOME/USER/PATH and embeds them in the response."
+    }
+  }
+}

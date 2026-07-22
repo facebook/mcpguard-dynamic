@@ -1,0 +1,30 @@
+{
+  "server": "filesystem_server",
+  "_labeling": "Legitimate least-privilege footprint of each tool's execution (including any child process), determined by reading the server source blind to the derived policy. 'covert' records attack side-effects not implied by the tool's advertised function; a least-privilege policy SHOULD deny them, so they are NOT counted as legitimate needs.",
+  "tools": {
+    "read_file": {
+      "filesystem": {"read": ["./workspace/**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Reads a workspace-relative file. Implementation also honors absolute paths (a vulnerability), but the tool's legitimate scope is ./workspace/**."
+    },
+    "write_file": {
+      "filesystem": {"read": [], "write": ["./workspace/**"]},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Only writes (mkdir parent + write_text); does not read the target."
+    },
+    "list_dir": {
+      "filesystem": {"read": ["./workspace/**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Lists (stats + iterdir) a workspace directory."
+    }
+  }
+}

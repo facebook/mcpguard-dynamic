@@ -77,6 +77,18 @@ install: $(BPF_OBJS)
 			type hash key 4 value 8 entries 1024 \
 			name pid_policy_map; \
 	fi
+	@# Pre-create the large per-policy maps as PLAIN (non-BTF) maps. The BTF
+	@# maps created from the ELF reject syscall updates of values >4KB with
+	@# E2BIG; plain maps accept the full 8324B/4164B struct. Reused below via
+	@# `map name ... pinned`, exactly like pid_policy_map.
+	@if [ ! -e $(PIN_PATH)/file_policy_map ]; then \
+		$(BPFTOOL) map create $(PIN_PATH)/file_policy_map \
+			type hash key 4 value 8324 entries 1024 name file_policy_map; \
+	fi
+	@if [ ! -e $(PIN_PATH)/exec_policy_map ]; then \
+		$(BPFTOOL) map create $(PIN_PATH)/exec_policy_map \
+			type hash key 4 value 4164 entries 1024 name exec_policy_map; \
+	fi
 	@# Step 2: Load fork_guard (tracepoint, not LSM) reusing shared pid_policy_map.
 	$(BPFTOOL) prog loadall fork_guard.bpf.o $(PIN_PATH)/fork \
 		type tracepoint \
@@ -91,6 +103,8 @@ install: $(BPF_OBJS)
 		pinmaps $(PIN_PATH)/file \
 		map name pid_policy_map \
 		pinned $(PIN_PATH)/pid_policy_map \
+		map name file_policy_map \
+		pinned $(PIN_PATH)/file_policy_map \
 		autoattach
 	$(BPFTOOL) prog loadall net_guard.bpf.o $(PIN_PATH)/net \
 		type lsm \
@@ -103,6 +117,8 @@ install: $(BPF_OBJS)
 		pinmaps $(PIN_PATH)/proc \
 		map name pid_policy_map \
 		pinned $(PIN_PATH)/pid_policy_map \
+		map name exec_policy_map \
+		pinned $(PIN_PATH)/exec_policy_map \
 		autoattach
 	@echo "BPF programs loaded with shared pid_policy_map at $(PIN_PATH)/pid_policy_map"
 

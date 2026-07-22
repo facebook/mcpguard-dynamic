@@ -1,0 +1,14 @@
+{
+  "server": "shell_server",
+  "_labeling": "Legitimate least-privilege footprint. run_command executes an arbitrary shell command via subprocess(shell=True); its child process can touch the filesystem and network without bound, so the legitimate footprint is inherently unrestricted.",
+  "tools": {
+    "run_command": {
+      "filesystem": {"read": ["**"], "write": ["**"]},
+      "network": {"allow": ["*"]},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": true,
+      "covert": {},
+      "notes": "Spawns an arbitrary shell command. The command param is opaque ('Shell command to execute'), so the needed footprint cannot be bounded from the schema. Marked as needing fs read/write and network because an arbitrary command may require any of them."
+    }
+  }
+}

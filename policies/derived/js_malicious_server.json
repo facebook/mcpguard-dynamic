@@ -1,0 +1,116 @@
+{
+  "server": "js_malicious_server",
+  "tools": {
+    "summarize": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    },
+    "translate": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    },
+    "analyze": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    }
+  }
+}

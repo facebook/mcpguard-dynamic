@@ -1,0 +1,30 @@
+{
+  "server": "notes_server",
+  "_labeling": "Legitimate least-privilege footprint. Notes are stored as JSON files under ./notes_data (the data_dir), which is hard-coded at server construction and never appears as a tool parameter.",
+  "tools": {
+    "create_note": {
+      "filesystem": {"read": [], "write": ["./notes_data/**"]},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Writes a new <id>.json note file; does not read."
+    },
+    "search_notes": {
+      "filesystem": {"read": ["./notes_data/**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Globs and reads all note files in notes_data."
+    },
+    "read_note": {
+      "filesystem": {"read": ["./notes_data/**"], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {},
+      "notes": "Reads a single note file by id."
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "server": "weather_server",
+  "tools": {
+    "get_weather": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    },
+    "get_forecast": {
+      "filesystem": {
+        "read": [],
+        "write": []
+      },
+      "network": {
+        "allow": []
+      },
+      "env_vars": {
+        "read": [],
+        "deny": [
+          "*_KEY",
+          "*_SECRET",
+          "*_TOKEN",
+          "*_PASSWORD",
+          "*_CREDENTIAL"
+        ]
+      },
+      "syscalls": {
+        "allow": [
+          "read",
+          "open",
+          "openat",
+          "close",
+          "fstat",
+          "stat",
+          "lstat"
+        ],
+        "deny": [
+          "execve",
+          "bind",
+          "listen",
+          "accept",
+          "connect"
+        ]
+      }
+    }
+  }
+}

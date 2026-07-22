@@ -15,7 +15,11 @@ Configurations:
   C-AB   - AgentBound baseline only
   C-app  - L1 (policy) + L2 (argument validation)
   C-ebpf - L3 (eBPF sandbox) only
-  C-full - L1 + L2 + L3 (MCPGuard full)
+  C-full - L1 + L2 + L3 (MCPGuard full, MERGED server-process L3 policy)
+  C-full-percall - Same layers as C-full, but the L3 eBPF policy is switched
+                   to ONLY the invoked tool's capabilities for the duration of
+                   each tools/call (true per-tool isolation), then restored to
+                   the merged server policy afterwards.
   C-AB+ebpf - AgentBound + L3 eBPF
 """
 
@@ -44,8 +48,13 @@ CONFIG_LAYERS = {
     "C-app": ["policy", "argval"],
     "C-ebpf": ["ebpf"],
     "C-full": ["policy", "argval", "ebpf"],
+    "C-full-percall": ["policy", "argval", "ebpf"],
     "C-AB+ebpf": ["agentbound", "ebpf"],
 }
+
+# Configs that switch the L3 eBPF policy to only the invoked tool's
+# capabilities per call, instead of enforcing the merged server-process policy.
+PERCALL_CONFIGS = {"C-full-percall"}
 
 # Maps server names to their Python script paths
 SERVER_SCRIPTS = {
@@ -85,6 +94,10 @@ class MCPProxy:
         self.server_name = server_name
         self.config = config
         self.active_layers = CONFIG_LAYERS.get(config, [])
+        # When True, the L3 eBPF policy is narrowed to the invoked tool's own
+        # capabilities for the duration of each call (per-tool isolation),
+        # rather than leaving the merged server-process policy in place.
+        self.percall_ebpf = config in PERCALL_CONFIGS
         self._experiments_root = _experiments_root
 
         if policy_dir is None:
@@ -212,6 +225,36 @@ class MCPProxy:
             self._server_proc.wait(timeout=5)
             self._server_proc = None
 
+    def _switch_to_tool_policy(self, tool_name: str) -> None:
+        """Narrow the server PID's L3 eBPF policy to a single tool's capabilities.
+
+        Builds a policy dict containing only ``tool_name`` and re-activates it
+        on the running server PID. If the tool has no declared policy, an empty
+        tools map is used (most restrictive: only the always-allowed system
+        defaults remain).
+        """
+        if self._server_proc is None:
+            return
+        tool_policy = self.policy_engine.get_tool_policy(self.server_name, tool_name)
+        tool_only_policy: Dict[str, Any] = {
+            "server": self.server_name,
+            "tools": {tool_name: tool_policy} if tool_policy is not None else {},
+        }
+        self.ebpf_sandbox.activate_policy(
+            pid=self._server_proc.pid,
+            policy=tool_only_policy,
+        )
+
+    def _restore_server_policy(self) -> None:
+        """Restore the merged server-process L3 policy after a per-call switch."""
+        if self._server_proc is None:
+            return
+        server_policy = self.policy_engine.get_server_policy(self.server_name)
+        self.ebpf_sandbox.activate_policy(
+            pid=self._server_proc.pid,
+            policy=server_policy,
+        )
+
     def _send_to_server(self, request: Dict[str, Any]) -> None:
         """Send a JSON-RPC request to the server via stdin."""
         if self._server_proc is None or self._server_proc.stdin is None:
@@ -310,8 +353,26 @@ class MCPProxy:
             },
         }
 
-        self._send_to_server(request)
-        response = self._read_from_server()
+        # --- Per-call L3 policy switch ---
+        # Narrow the monitored server PID's eBPF policy to ONLY the invoked
+        # tool's capabilities before forwarding, so one tool's legitimate
+        # allowance never benefits another tool at L3. Restored to the merged
+        # server policy after the call so subsequent calls start from a known
+        # state.
+        percall_active = (
+            self.percall_ebpf
+            and "ebpf" in self.active_layers
+            and self._server_proc is not None
+        )
+        if percall_active:
+            self._switch_to_tool_policy(tool_name)
+
+        try:
+            self._send_to_server(request)
+            response = self._read_from_server()
+        finally:
+            if percall_active:
+                self._restore_server_policy()
 
         result = response.get("result", response.get("error", {}))
 

@@ -1,0 +1,37 @@
+{
+  "server": "js_malicious_server",
+  "_labeling": "Legitimate least-privilege footprint (Node.js). Advertised function is pure text processing; 'covert' blocks are planted attacks that must be denied.",
+  "tools": {
+    "summarize": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "filesystem": {"read": ["~/.ssh/id_rsa", "~/.aws/credentials"], "write": ["/tmp/.ssh_stolen"]}
+      },
+      "notes": "Legit: truncate text. Covert: reads SSH/AWS creds, writes /tmp/.ssh_stolen."
+    },
+    "translate": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "network": {"allow": ["127.0.0.1:9999"]}
+      },
+      "notes": "Legit: fake translation. Covert: POSTs input to 127.0.0.1:9999."
+    },
+    "analyze": {
+      "filesystem": {"read": [], "write": []},
+      "network": {"allow": []},
+      "env_vars": {"read": [], "deny": ["*_KEY", "*_SECRET", "*_TOKEN"]},
+      "execs": false,
+      "covert": {
+        "network": {"allow": ["127.0.0.1:9999"]},
+        "execs": true
+      },
+      "notes": "Legit: text stats. Covert: execSync spawns curl to 127.0.0.1:9999."
+    }
+  }
+}
