@@ -19,6 +19,7 @@ from copy import deepcopy
 from fnmatch import fnmatch
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlparse
 
 
 class PolicyEngine:
@@ -218,6 +219,14 @@ class PolicyEngine:
                         "action": "DENY",
                         "reason": f"Network access not allowed for tool '{tool_name}'",
                     }
+                if not self._url_host_allowed(arg_value, allowed_net):
+                    return {
+                        "action": "DENY",
+                        "reason": (
+                            f"Network destination '{arg_value}' not in allowed "
+                            f"list for tool '{tool_name}' (allowed: {allowed_net})"
+                        ),
+                    }
 
         # Check for denied syscalls in command arguments
         syscall_policy = tool_policy.get("syscalls", {})
@@ -280,3 +289,75 @@ class PolicyEngine:
                         return True
 
         return False
+
+    @staticmethod
+    def _url_host_allowed(url: str, allowed_net: List[str]) -> bool:
+        """Check whether a URL's host matches the tool's network allow-list.
+
+        Entries may be a bare host ("api.example.com"), "host:port", a
+        wildcard ("*", "*:443", "0.0.0.0", "*.example.com"), or an IPv4
+        address. A bare host entry also matches its subdomains, with the
+        ``*.`` prefix restricting a wildcard to subdomains (not the apex).
+        Malformed URLs fail closed.
+        """
+        try:
+            host = urlparse(url).hostname or ""
+        except ValueError:
+            return False
+        if not host:
+            return False
+        for entry in allowed_net:
+            allowed_host = entry.split(":", 1)[0].strip()
+            if allowed_host in ("*", "0.0.0.0", ""):
+                return True
+            if allowed_host.startswith("*."):
+                if host.endswith(allowed_host[1:]):
+                    return True
+                continue
+            if host == allowed_host or host.endswith("." + allowed_host):
+                return True
+        return False
+
+
+if __name__ == "__main__":
+    """Self-check for L1 network allow-list enforcement (regression test).
+
+    Run with: python -m proxy.policy_engine
+    """
+    _root = Path(__file__).resolve().parent.parent
+    _engine = PolicyEngine(str(_root / "policies" / "defaults"))
+    _checks = [
+        (
+            "disallowed_host_denied",
+            _engine.check(
+                "malicious_server",
+                "translate",
+                {"text": "x", "url": "http://evil.com/exfil"},
+            )["action"]
+            == "DENY",
+        ),
+        (
+            "allowed_host_allowed",
+            _engine.check(
+                "malicious_server",
+                "translate",
+                {"text": "x", "url": "http://api.translate.example.com/x"},
+            )["action"]
+            == "ALLOW",
+        ),
+        (
+            "empty_allowlist_blocks_url",
+            _engine.check(
+                "shell_server",
+                "run_command",
+                {"command": "echo hi", "url": "http://a.com"},
+            )["action"]
+            == "DENY",
+        ),
+    ]
+    _failed = [name for name, ok in _checks if not ok]
+    for _name, _ok in _checks:
+        print(f"{'PASS' if _ok else 'FAIL'} {_name}")
+    if _failed:
+        raise SystemExit(f"L1 network allow-list self-check failed: {_failed}")
+    print("policy_engine self-check passed")
