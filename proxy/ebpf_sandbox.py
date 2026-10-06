@@ -58,9 +58,29 @@ def _str_to_hex(s: str, total_len: int) -> List[str]:
     return [f"0x{b:02x}" for b in padded]
 
 
+def _find_bpftool() -> str:
+    """Find a working bpftool binary, bypassing broken wrappers."""
+    import shutil
+    if shutil.which("bpftool"):
+        try:
+            subprocess.run(["bpftool", "version"], check=True, capture_output=True)
+            return "bpftool"
+        except subprocess.CalledProcessError:
+            pass
+    try:
+        res = subprocess.run(["find", "/usr/lib/linux-tools", "-name", "bpftool"], capture_output=True, text=True)
+        if res.stdout.strip():
+            return res.stdout.strip().split('\n')[0]
+    except Exception:
+        pass
+    return "bpftool"
+
+BPFTOOL_CMD = _find_bpftool()
+
+
 def _run_bpftool(args: List[str]) -> bool:
     """Run a bpftool command, returning True on success."""
-    cmd = ["sudo", "bpftool"] + args
+    cmd = ["sudo", BPFTOOL_CMD] + args
     result = subprocess.run(
         cmd,
         capture_output=True,
@@ -96,7 +116,7 @@ def _run_bpftool_map_update_binary(
         cmd = (
             [
                 "sudo",
-                "bpftool",
+                BPFTOOL_CMD,
                 "map",
                 "update",
                 "pinned",
@@ -639,7 +659,7 @@ class EBPFSandbox:
         """
         try:
             result = subprocess.run(
-                ["sudo", "bpftool", "map", "dump", "pinned", SHARED_PID_MAP, "-j"],
+                ["sudo", BPFTOOL_CMD, "map", "dump", "pinned", SHARED_PID_MAP, "-j"],
                 capture_output=True,
                 text=True,
                 timeout=10,

@@ -15,6 +15,11 @@
  * header would cause duplicate typedef errors. */
 
 /* Maximum path prefix length stored in BPF maps */
+/* Graceful fallbacks for standard types if vmlinux.h strips them.
+ * C11 allows identical typedef redefinitions, so this is safe. */
+typedef unsigned int __u32;
+typedef unsigned long long __u64;
+
 #define MAX_PATH_LEN 256
 
 /* Maximum number of monitored PIDs */
