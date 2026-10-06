@@ -80,8 +80,9 @@ with root privileges.
 ## Headline Results
 
 Attack Prevention Rate (APR), viable-attack APR (V-APR), and False Positive
-Rate (FPR) across the paper-pinned `codex_20260523_full` 14-server, 82-case
-benchmark:
+Rate (FPR) for the single pinned run `codex_20260523_full` (14-server, 82-case
+benchmark; this is the `fx_r` per-category profile — the paper's Table 1
+reports N=5 means, so `C-app` here reads 13/48 vs the 12/48 mean):
 
 | Config | APR | V-APR | Viable blocked | FPR |
 |--------|-----|-------|----------------|-----|
